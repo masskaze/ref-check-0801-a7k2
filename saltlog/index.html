@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>食事・血圧の記録</title>
+<style>
+:root{
+  --paper:#F1F4EE;
+  --panel:#FFFFFF;
+  --ink:#22262A;
+  --sub:#6B7278;
+  --line:#DDE3DA;
+  --good:#2F6F4E;
+  --over:#B8412A;
+  --dia:#2C6FA8;
+  --band:#E6EDE3;
+  --accent:#3F6B52;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:"Hiragino Kaku Gothic ProN","Yu Gothic Medium","Yu Gothic",Meiryo,system-ui,sans-serif;
+  font-size:15px;line-height:1.7;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3{margin:0;font-weight:600;letter-spacing:.02em}
+a{color:var(--accent)}
+
+.wrap{max-width:760px;margin:0 auto;padding:0 14px 96px}
+
+/* ---- ヘッダ ---- */
+header{background:var(--panel);border-bottom:1px solid var(--line)}
+.head-in{max-width:760px;margin:0 auto;padding:14px 14px 0;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.head-in h1{font-size:17px}
+.head-in .date-pick{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:13px;color:var(--sub)}
+nav{max-width:760px;margin:0 auto;padding:10px 14px 0;display:flex;gap:4px}
+nav button{
+  border:1px solid transparent;border-bottom:none;background:none;color:var(--sub);
+  padding:8px 14px;border-radius:8px 8px 0 0;cursor:pointer;font-size:14px;
+}
+nav button[aria-selected="true"]{background:var(--paper);border-color:var(--line);color:var(--ink);font-weight:600}
+
+/* ---- パネル ---- */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;margin:14px 0}
+.panel > h2{font-size:15px;margin-bottom:2px}
+.panel > .hint{color:var(--sub);font-size:12.5px;margin:2px 0 12px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:4px}
+.field > label{font-size:12.5px;color:var(--sub)}
+input[type=text],input[type=number],input[type=date],input[type=time],input[type=password],select,textarea{
+  border:1px solid var(--line);border-radius:7px;padding:8px 10px;background:#fff;min-width:0;
+}
+textarea{width:100%;resize:vertical}
+input[type=number]{width:92px}
+.btn{
+  border:1px solid var(--line);background:#fff;border-radius:7px;padding:8px 14px;cursor:pointer;
+}
+.btn:hover{background:#F7F9F5}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{background:#355B45}
+.btn.quiet{border-color:transparent;color:var(--sub);padding:6px 8px}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.sm{padding:5px 10px;font-size:13px}
+
+/* ---- 塩分ゲージ ---- */
+.gauge{margin:2px 0 0}
+.gauge .nums{display:flex;align-items:baseline;gap:10px}
+.gauge .big{font-size:34px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.1}
+.gauge .big.ok{color:var(--good)}
+.gauge .big.over{color:var(--over)}
+.gauge .unit{font-size:15px;color:var(--sub)}
+.gauge .diff{margin-left:auto;font-size:13.5px;color:var(--sub)}
+.track{position:relative;height:12px;background:var(--band);border-radius:6px;margin:10px 0 6px;overflow:hidden}
+.track .fill{position:absolute;inset:0 auto 0 0;background:var(--good);border-radius:6px}
+.track .fill.over{background:var(--over)}
+.track .goal{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.55}
+.subline{font-size:12.5px;color:var(--sub)}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-top:14px}
+.stat{border:1px solid var(--line);border-radius:8px;padding:9px 11px}
+.stat .k{font-size:11.5px;color:var(--sub)}
+.stat .v{font-size:19px;font-weight:600;font-variant-numeric:tabular-nums}
+
+/* ---- 一覧 ---- */
+.item{border-top:1px solid var(--line);padding:11px 0}
+.item:first-of-type{border-top:none}
+.item .top{display:flex;gap:10px;align-items:baseline}
+.item .name{font-weight:600}
+.item .slot{font-size:11.5px;color:var(--sub);border:1px solid var(--line);border-radius:20px;padding:1px 8px}
+.item .salt{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:600}
+.item .meta{font-size:12.5px;color:var(--sub);margin-top:2px}
+.item .acts{display:flex;gap:4px;margin-top:4px}
+.tag{display:inline-block;font-size:11px;border-radius:20px;padding:1px 8px;border:1px solid var(--line);color:var(--sub);margin-right:4px}
+.tag.fix{border-color:var(--accent);color:var(--accent)}
+.tag.meas{border-color:var(--dia);color:var(--dia)}
+.thumb{width:52px;height:52px;object-fit:cover;border-radius:6px;border:1px solid var(--line);flex:none}
+.empty{color:var(--sub);font-size:13px;padding:8px 0}
+
+/* ---- 推定結果 ---- */
+.result{border:1px solid var(--line);border-radius:9px;padding:13px;margin-top:12px;background:#FAFCF8}
+.result h3{font-size:14px;margin-bottom:6px}
+.result ul{margin:6px 0;padding-left:1.15em}
+.result li{margin:2px 0}
+.note-good{color:var(--good)}
+.note-ask{color:var(--dia)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.chip{border:1px solid var(--line);border-radius:20px;padding:5px 11px;font-size:13px;cursor:pointer;background:#fff;user-select:none}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.msg{border-radius:7px;padding:9px 12px;margin-top:10px;font-size:13.5px}
+.msg.err{background:#FBEEEB;border:1px solid #E7C6BE;color:var(--over)}
+.msg.ok{background:#EDF4EE;border:1px solid #C9DFCF;color:var(--good)}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ---- レポート ---- */
+.report{background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px}
+.report h2{font-size:17px}
+.report .period{color:var(--sub);font-size:13px;margin-top:2px}
+.report svg{display:block;width:100%;height:auto;margin:16px 0 4px}
+.report .cap{font-size:12.5px;color:var(--sub);margin:0 0 18px}
+.rep-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin:14px 0 4px}
+.legend{font-size:12px;color:var(--sub);display:flex;gap:14px;flex-wrap:wrap;margin-top:-6px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:2px;vertical-align:-1px;margin-right:4px}
+table.med{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+table.med th,table.med td{border-bottom:1px solid var(--line);padding:5px 6px;text-align:left}
+table.med th{color:var(--sub);font-weight:500}
+
+.disclaim{font-size:12px;color:var(--sub);border-top:1px solid var(--line);margin-top:20px;padding-top:10px}
+
+@media (max-width:520px){
+  .head-in .date-pick{width:100%;margin-left:0}
+  input[type=number]{width:78px}
+}
+@media print{
+  body{background:#fff}
+  header,nav,.no-print{display:none !important}
+  .wrap{max-width:none;padding:0}
+  .report{border:none;border-radius:0;padding:0}
+  .panel{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="head-in">
+    <h1>食事・血圧の記録</h1>
+    <div class="date-pick">
+      <label for="theDate">日付</label>
+      <input type="date" id="theDate">
+    </div>
+  </div>
+  <nav>
+    <button id="tab-day" aria-selected="true">今日</button>
+    <button id="tab-report" aria-selected="false">週次レポート</button>
+    <button id="tab-settings" aria-selected="false">設定</button>
+  </nav>
+</header>
+
+<div class="wrap">
+  <div id="view-day"></div>
+  <div id="view-report" hidden></div>
+  <div id="view-settings" hidden></div>
+</div>
+
+<script>
+"use strict";
+
+/* =========================================================
+   1. 保存まわり
+   localStorage に 1 つのキーでまとめて持つ。書き出しが楽になる。
+   ========================================================= */
+const STORE_KEY = "saltlog.v1";
+
+const DEFAULT_SETTINGS = {
+  apiKey: "",
+  model: "claude-sonnet-4-6",
+  saltGoal: 6,
+  bpGoalSys: 135,
+  bpGoalDia: 85,
+  savePhoto: true
+};
+
+let DB = { days: {}, settings: Object.assign({}, DEFAULT_SETTINGS) };
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      DB.days = parsed.days || {};
+      DB.settings = Object.assign({}, DEFAULT_SETTINGS, parsed.settings || {});
+    }
+  } catch (e) {
+    console.warn("読み込みに失敗しました", e);
+  }
+}
+
+// 容量が足りない時は、古い写真から捨てて入れ直す。
+function save() {
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(DB));
+    return true;
+  } catch (e) {
+    const dropped = dropOldestPhoto();
+    if (dropped) return save();
+    flash("保存できませんでした。設定から書き出して、記録を減らしてください。", "err");
+    return false;
+  }
+}
+
+function dropOldestPhoto() {
+  const dates = Object.keys(DB.days).sort();
+  for (const d of dates) {
+    const meals = DB.days[d].meals || [];
+    for (const m of meals) {
+      if (m.photo) { m.photo = null; return true; }
+    }
+  }
+  return false;
+}
+
+function normalizeDay(d) {
+  d.meals = d.meals || [];
+  d.bp = d.bp || [];
+  if (typeof d.alcohol !== "number") d.alcohol = 0;
+  if (typeof d.meds !== "string") d.meds = "";
+  if (typeof d.memo !== "string") d.memo = "";
+  if (typeof d.noAlcohol !== "boolean") d.noAlcohol = false;
+  return d;
+}
+
+// 読むだけ。存在しない日を作らない（空の日が書き出しに混ざるのを防ぐ）。
+function dayOf(date) {
+  const d = DB.days[date];
+  return d ? normalizeDay(d) : { meals: [], bp: [], alcohol: 0, meds: "", memo: "", noAlcohol: false };
+}
+
+// 書き込む時はこちら。存在しなければ作る。
+function ensureDay(date) {
+  if (!DB.days[date]) DB.days[date] = { meals: [], bp: [], alcohol: 0, meds: "", memo: "", noAlcohol: false };
+  return normalizeDay(DB.days[date]);
+}
+
+function hasRecord(date) {
+  const d = DB.days[date];
+  if (!d) return false;
+  return (d.meals && d.meals.length) || (d.bp && d.bp.length)
+    || (d.meds && d.meds.length) || num(d.alcohol) > 0 || d.noAlcohol === true;
+}
+
+/* =========================================================
+   2. 小さな道具
+   ========================================================= */
+const $ = (sel, root) => (root || document).querySelector(sel);
+const uid = () => Math.random().toString(36).slice(2, 10);
+
+function todayStr(d) {
+  const t = d || new Date();
+  const p = n => String(n).padStart(2, "0");
+  return t.getFullYear() + "-" + p(t.getMonth() + 1) + "-" + p(t.getDate());
+}
+function shiftDate(str, days) {
+  const [y, m, d] = str.split("-").map(Number);
+  const t = new Date(y, m - 1, d + days);
+  return todayStr(t);
+}
+function nowTime() {
+  const t = new Date();
+  const p = n => String(n).padStart(2, "0");
+  return p(t.getHours()) + ":" + p(t.getMinutes());
+}
+function fmtMD(str) {
+  const [, m, d] = str.split("-");
+  return Number(m) + "/" + Number(d);
+}
+function weekday(str) {
+  const [y, m, d] = str.split("-").map(Number);
+  return "日月火水木金土"[new Date(y, m - 1, d).getDay()];
+}
+function num(v, fallback) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : (fallback === undefined ? 0 : fallback);
+}
+function r1(n) { return Math.round(n * 10) / 10; }
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, c =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+let flashTimer = null;
+function flash(text, kind, host) {
+  const box = host || $("#flash-day") || document.body;
+  const el = document.createElement("div");
+  el.className = "msg " + (kind === "err" ? "err" : "ok");
+  el.textContent = text;
+  box.innerHTML = "";
+  box.appendChild(el);
+  clearTimeout(flashTimer);
+  flashTimer = setTimeout(() => { if (el.parentNode) el.remove(); }, 6000);
+}
+
+/* =========================================================
+   3. 集計
+   ========================================================= */
+function dayTotals(date) {
+  const d = dayOf(date);
+  const t = { salt: 0, kcal: 0, potassium: 0, alcohol: num(d.alcohol) };
+  for (const m of d.meals) {
+    t.salt += num(m.salt);
+    t.kcal += num(m.kcal);
+    t.potassium += num(m.potassium);
+  }
+  t.salt = r1(t.salt);
+  t.kcal = Math.round(t.kcal);
+  t.potassium = Math.round(t.potassium);
+  return t;
+}
+
+function morningBp(date) {
+  const d = dayOf(date);
+  const list = d.bp.filter(b => b.tag === "朝" && !b.drank);
+  return list.length ? list[0] : null;
+}
+
+function rangeDates(endDate, count) {
+  const out = [];
+  for (let i = count - 1; i >= 0; i--) out.push(shiftDate(endDate, -i));
+  return out;
+}
+
+/* =========================================================
+   4. 画面：今日
+   ========================================================= */
+const SLOTS = ["朝", "昼", "夜", "間食"];
+
+const MODIFIERS = [
+  { id: "soup_left", label: "汁を残した" },
+  { id: "soup_all", label: "汁を全部飲んだ" },
+  { id: "half", label: "半サイズ" },
+  { id: "large", label: "大盛" },
+  { id: "shared", label: "シェアした" },
+  { id: "sauce_side", label: "タレは別添え" },
+  { id: "no_sauce", label: "タレをかけていない" },
+  { id: "no_pickles", label: "漬物を残した" }
+];
+
+let state = {
+  date: todayStr(),
+  tab: "day",
+  slot: "昼",
+  mealText: "",
+  mods: {},
+  photoFull: null,   // 送信用（長辺1024px）
+  photoThumb: null,  // 保存用（長辺320px）
+  estimate: null,
+  busy: false,
+  editingMeal: null,
+  reportEnd: todayStr()
+};
+
+function renderDay() {
+  const date = state.date;
+  const d = dayOf(date);
+  const t = dayTotals(date);
+  const goal = num(DB.settings.saltGoal, 6);
+  const over = t.salt > goal;
+  const pct = Math.min(100, (t.salt / (goal * 1.6)) * 100);
+  const goalPct = (goal / (goal * 1.6)) * 100;
+  const diff = r1(Math.abs(t.salt - goal));
+
+  const html = [];
+
+  /* --- 塩分サマリ --- */
+  html.push(`
+  <div class="panel">
+    <h2>${fmtMD(date)}（${weekday(date)}）の塩分</h2>
+    <p class="hint">目標は1日 ${goal}g 以内です。</p>
+    <div class="gauge">
+      <div class="nums">
+        <span class="big ${over ? "over" : "ok"}">${t.salt.toFixed(1)}</span>
+        <span class="unit">g</span>
+        <span class="diff">${over ? "目標を " + diff + "g 超えています" : "目標まで あと " + diff + "g"}</span>
+      </div>
+      <div class="track">
+        <div class="fill ${over ? "over" : ""}" style="width:${pct}%"></div>
+        <div class="goal" style="left:${goalPct}%"></div>
+      </div>
+      <div class="subline">縦線が ${goal}g の位置です。</div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="k">エネルギー</div><div class="v">${t.kcal}<span class="unit" style="font-size:12px"> kcal</span></div></div>
+      <div class="stat"><div class="k">カリウム</div><div class="v">${t.potassium}<span class="unit" style="font-size:12px"> mg</span></div></div>
+      <div class="stat"><div class="k">純アルコール</div><div class="v">${r1(t.alcohol)}<span class="unit" style="font-size:12px"> g</span></div></div>
+      <div class="stat"><div class="k">食事の記録</div><div class="v">${d.meals.length}<span class="unit" style="font-size:12px"> 件</span></div></div>
+    </div>
+    <div id="flash-day"></div>
+  </div>`);
+
+  /* --- 食事を追加 --- */
+  html.push(`
+  <div class="panel">
+    <h2>食事を記録する</h2>
+    <p class="hint">写真かテキストのどちらかがあれば推定できます。両方あると精度が上がります。</p>
+
+    <div class="chips" id="slotChips">
+      ${SLOTS.map(s => `<button class="chip" data-slot="${s}" aria-pressed="${state.slot === s}">${s}</button>`).join("")}
+    </div>
+
+    <div class="row" style="margin-top:12px">
+      <div class="field" style="flex:1;min-width:240px">
+        <label for="mealText">食べたもの</label>
+        <textarea id="mealText" rows="2" placeholder="例：担々麺（並）と半チャーハン、餃子3個">${esc(state.mealText)}</textarea>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:10px">
+      <div class="field">
+        <label for="photoInput">写真（任意）</label>
+        <input type="file" id="photoInput" accept="image/*">
+      </div>
+      ${state.photoThumb ? `<img class="thumb" src="${state.photoThumb}" alt="選択した写真">
+        <button class="btn sm" id="clearPhoto">写真を外す</button>` : ""}
+    </div>
+
+    <p class="hint" style="margin:14px 0 4px">当てはまるものを選ぶと、推定が変わります。</p>
+    <div class="chips" id="modChips">
+      ${MODIFIERS.map(m => `<button class="chip" data-mod="${m.id}" aria-pressed="${!!state.mods[m.id]}">${m.label}</button>`).join("")}
+    </div>
+
+    <div class="row" style="margin-top:14px">
+      <button class="btn primary" id="estimateBtn" ${state.busy ? "disabled" : ""}>
+        ${state.busy ? '<span class="spin"></span>推定中' : "AI で推定する"}
+      </button>
+      <button class="btn" id="manualBtn">手入力で追加</button>
+    </div>
+
+    <div id="estimateBox">${state.estimate ? renderEstimate(state.estimate) : ""}</div>
+  </div>`);
+
+  /* --- 食事の一覧 --- */
+  html.push(`
+  <div class="panel">
+    <h2>この日の食事</h2>
+    <div id="mealList">${renderMealList(d.meals)}</div>
+  </div>`);
+
+  /* --- 血圧 --- */
+  html.push(`
+  <div class="panel">
+    <h2>血圧</h2>
+    <p class="hint">朝は起床後・服薬前に測ります。飲酒後の値は必ず印を付けます。</p>
+    <div class="row">
+      <div class="field"><label for="bpSys">上（収縮期）</label><input type="number" id="bpSys" inputmode="numeric" placeholder="116"></div>
+      <div class="field"><label for="bpDia">下（拡張期）</label><input type="number" id="bpDia" inputmode="numeric" placeholder="84"></div>
+      <div class="field"><label for="bpPulse">脈拍（任意）</label><input type="number" id="bpPulse" inputmode="numeric" placeholder="68"></div>
+      <div class="field"><label for="bpTag">区分</label>
+        <select id="bpTag"><option>朝</option><option>夜</option></select></div>
+      <div class="field"><label for="bpTime">時刻</label><input type="time" id="bpTime" value="${nowTime()}"></div>
+      <div class="field"><label for="bpDrank">飲酒後</label>
+        <div style="padding:8px 0"><input type="checkbox" id="bpDrank"></div></div>
+      <button class="btn primary" id="bpAdd">追加</button>
+    </div>
+    <div id="bpList" style="margin-top:10px">${renderBpList(d.bp)}</div>
+
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;color:var(--sub);font-size:13px">まとめて貼り付ける（iPhone のショートカットから）</summary>
+      <p class="hint" style="margin-top:8px">1行に1件。例：<code>2026-08-26 朝 116/84 68</code>／日付と区分は省略できます。</p>
+      <textarea id="bpPaste" rows="3" placeholder="2026-08-26 朝 116/84 68&#10;2026-08-26 夜 107/77"></textarea>
+      <button class="btn sm" id="bpPasteBtn" style="margin-top:6px">読み込む</button>
+    </details>
+  </div>`);
+
+  /* --- 飲酒・服薬・メモ --- */
+  html.push(`
+  <div class="panel">
+    <h2>飲酒・服薬・メモ</h2>
+    <p class="hint">服薬は記録だけを残します。量の判断は主治医の領域です。<br>飲まなかった日は「休肝日」を押します。押した日だけをレポートで数えます。</p>
+    <div class="row">
+      <div class="field"><label for="alcoholIn">純アルコール（g）</label>
+        <input type="number" id="alcoholIn" step="1" inputmode="numeric" value="${num(d.alcohol)}"></div>
+      <button class="btn sm chip" id="alcZero" aria-pressed="${d.noAlcohol ? "true" : "false"}">休肝日</button>
+      <div class="field" style="flex:1;min-width:220px">
+        <label for="medsIn">服薬メモ</label>
+        <input type="text" id="medsIn" placeholder="例：アムロジピン5mg" value="${esc(d.meds)}">
+      </div>
+    </div>
+    <div class="field" style="margin-top:10px">
+      <label for="memoIn">その日のメモ</label>
+      <input type="text" id="memoIn" placeholder="例：会食、外食が2回" value="${esc(d.memo)}">
+    </div>
+    <div class="row" style="margin-top:10px"><button class="btn" id="saveDayBtn">この欄を保存</button></div>
+  </div>`);
+
+  $("#view-day").innerHTML = html.join("");
+  bindDay();
+}
+
+function renderMealList(meals) {
+  if (!meals.length) return `<div class="empty">まだ記録がありません。</div>`;
+  const order = { "朝": 0, "昼": 1, "夜": 2, "間食": 3 };
+  const sorted = meals.slice().sort((a, b) => (order[a.slot] ?? 9) - (order[b.slot] ?? 9));
+  return sorted.map(m => {
+    if (state.editingMeal === m.id) return renderMealEditor(m);
+    const tags = [];
+    if (m.source === "measured") tags.push(`<span class="tag meas">実測値</span>`);
+    else if (m.edited) tags.push(`<span class="tag fix">手で修正</span>`);
+    if (m.modifiers && m.modifiers.length) {
+      m.modifiers.forEach(id => {
+        const mo = MODIFIERS.find(x => x.id === id);
+        if (mo) tags.push(`<span class="tag">${mo.label}</span>`);
+      });
+    }
+    return `
+    <div class="item" data-id="${m.id}">
+      <div class="top">
+        ${m.photo ? `<img class="thumb" src="${m.photo}" alt="">` : ""}
+        <div style="flex:1;min-width:0">
+          <div class="top">
+            <span class="slot">${esc(m.slot || "")}</span>
+            <span class="name">${esc(m.label)}</span>
+            <span class="salt">${r1(num(m.salt)).toFixed(1)} g</span>
+          </div>
+          <div class="meta">${Math.round(num(m.kcal))} kcal ／ カリウム ${Math.round(num(m.potassium))} mg${m.note ? "　" + esc(m.note) : ""}</div>
+          <div class="meta">${tags.join("")}</div>
+          <div class="acts">
+            <button class="btn quiet sm" data-act="edit" data-id="${m.id}">修正</button>
+            <button class="btn quiet sm" data-act="del" data-id="${m.id}">削除</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function renderMealEditor(m) {
+  return `
+  <div class="item" data-id="${m.id}">
+    <div class="field"><label>品目</label><input type="text" id="ed-label" value="${esc(m.label)}"></div>
+    <div class="row" style="margin-top:8px">
+      <div class="field"><label>塩分 g</label><input type="number" id="ed-salt" step="0.1" value="${num(m.salt)}"></div>
+      <div class="field"><label>kcal</label><input type="number" id="ed-kcal" step="10" value="${num(m.kcal)}"></div>
+      <div class="field"><label>カリウム mg</label><input type="number" id="ed-k" step="10" value="${num(m.potassium)}"></div>
+      <div class="field"><label>区分</label>
+        <select id="ed-slot">${SLOTS.map(s => `<option ${s === m.slot ? "selected" : ""}>${s}</option>`).join("")}</select></div>
+    </div>
+    <div class="field" style="margin-top:8px"><label>メモ</label><input type="text" id="ed-note" value="${esc(m.note || "")}"></div>
+    <div class="row" style="margin-top:8px">
+      <label style="font-size:13px;color:var(--sub)">
+        <input type="checkbox" id="ed-meas" ${m.source === "measured" ? "checked" : ""}> 店の表示値（実測）
+      </label>
+      <button class="btn primary sm" data-act="save-edit" data-id="${m.id}">保存</button>
+      <button class="btn sm" data-act="cancel-edit">やめる</button>
+    </div>
+  </div>`;
+}
+
+function renderBpList(list) {
+  if (!list.length) return `<div class="empty">まだ記録がありません。</div>`;
+  const sorted = list.slice().sort((a, b) => String(a.time).localeCompare(String(b.time)));
+  const gs = num(DB.settings.bpGoalSys, 135), gd = num(DB.settings.bpGoalDia, 85);
+  return sorted.map(b => {
+    const hi = num(b.sys) >= gs || num(b.dia) >= gd;
+    const color = b.drank ? "var(--sub)" : (hi ? "var(--over)" : "var(--good)");
+    return `
+    <div class="item" data-id="${b.id}">
+      <div class="top">
+        <span class="slot">${esc(b.tag)}</span>
+        <span class="name" style="color:${color};font-variant-numeric:tabular-nums">${num(b.sys)} / ${num(b.dia)}</span>
+        <span class="meta">${esc(b.time || "")}${b.pulse ? "　脈 " + num(b.pulse) : ""}</span>
+        ${b.drank ? `<span class="tag">飲酒後</span>` : ""}
+        <span style="margin-left:auto"><button class="btn quiet sm" data-act="bpdel" data-id="${b.id}">削除</button></span>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function renderEstimate(e) {
+  const items = (e.items || []).map(i =>
+    `<li>${esc(i.name)}　<b>${r1(num(i.salt)).toFixed(1)} g</b>${i.note ? "　<span style='color:var(--sub)'>" + esc(i.note) + "</span>" : ""}</li>`
+  ).join("");
+  const conf = { high: "高い", medium: "ふつう", low: "低い" }[e.confidence] || "ふつう";
+  const total = e.total || {};
+  return `
+  <div class="result">
+    <h3>推定結果：${esc(e.label || "食事")}</h3>
+    <div class="nums" style="display:flex;align-items:baseline;gap:8px">
+      <span class="big" style="font-size:28px;font-weight:600">${r1(num(total.salt)).toFixed(1)}</span><span class="unit">g</span>
+      <span style="color:var(--sub);font-size:13px">${Math.round(num(total.kcal))} kcal ／ カリウム ${Math.round(num(total.potassium))} mg${num(total.alcohol_g) > 0 ? " ／ 純アルコール " + r1(num(total.alcohol_g)) + " g" : ""}</span>
+      <span style="margin-left:auto;font-size:12px;color:var(--sub)">確からしさ：${conf}</span>
+    </div>
+    ${items ? `<ul>${items}</ul>` : ""}
+    ${(e.advice || []).length ? `<div style="margin-top:8px"><b style="font-size:13px">改善点</b><ul>${e.advice.map(a => `<li>${esc(a)}</li>`).join("")}</ul></div>` : ""}
+    ${(e.praise || []).length ? `<div class="note-good" style="margin-top:6px"><ul>${e.praise.map(a => `<li>${esc(a)}</li>`).join("")}</ul></div>` : ""}
+    ${(e.questions || []).length ? `<div class="note-ask" style="margin-top:6px"><b style="font-size:13px">分かると精度が上がること</b><ul>${e.questions.map(a => `<li>${esc(a)}</li>`).join("")}</ul></div>` : ""}
+    <div class="row" style="margin-top:12px">
+      <button class="btn primary" id="acceptEst">この内容で記録する</button>
+      <button class="btn" id="discardEst">やめる</button>
+    </div>
+    <p class="hint" style="margin:8px 0 0">記録したあとでも、数値は手で直せます。</p>
+  </div>`;
+}
+
+/* --- 今日の画面のイベント --- */
+function bindDay() {
+  $("#mealText").addEventListener("input", ev => { state.mealText = ev.target.value; });
+
+  $("#slotChips").addEventListener("click", ev => {
+    const b = ev.target.closest("[data-slot]"); if (!b) return;
+    state.slot = b.dataset.slot;
+    $("#slotChips").querySelectorAll("[data-slot]").forEach(x =>
+      x.setAttribute("aria-pressed", String(x.dataset.slot === state.slot)));
+  });
+
+  $("#modChips").addEventListener("click", ev => {
+    const b = ev.target.closest("[data-mod]"); if (!b) return;
+    const id = b.dataset.mod;
+    state.mods[id] = !state.mods[id];
+    b.setAttribute("aria-pressed", String(!!state.mods[id]));
+  });
+
+  $("#photoInput").addEventListener("change", async ev => {
+    const f = ev.target.files && ev.target.files[0];
+    if (!f) return;
+    try {
+      state.photoFull = await shrinkImage(f, 1024, 0.75);
+      state.photoThumb = await shrinkImage(f, 320, 0.6);
+      renderDay();
+    } catch (e) {
+      flash("写真を読み込めませんでした。", "err");
+    }
+  });
+  if ($("#clearPhoto")) $("#clearPhoto").addEventListener("click", () => {
+    state.photoFull = null; state.photoThumb = null; renderDay();
+  });
+
+  $("#estimateBtn").addEventListener("click", runEstimate);
+  $("#manualBtn").addEventListener("click", addManualMeal);
+
+  if ($("#acceptEst")) $("#acceptEst").addEventListener("click", acceptEstimate);
+  if ($("#discardEst")) $("#discardEst").addEventListener("click", () => { state.estimate = null; renderDay(); });
+
+  $("#mealList").addEventListener("click", onMealListClick);
+  $("#bpList").addEventListener("click", ev => {
+    const b = ev.target.closest("[data-act='bpdel']"); if (!b) return;
+    const d = ensureDay(state.date);
+    d.bp = d.bp.filter(x => x.id !== b.dataset.id);
+    save(); renderDay();
+  });
+
+  $("#bpAdd").addEventListener("click", addBp);
+  $("#bpPasteBtn").addEventListener("click", importBpText);
+  $("#alcZero").addEventListener("click", () => {
+    const d = ensureDay(state.date);
+    d.noAlcohol = !d.noAlcohol;
+    if (d.noAlcohol) $("#alcoholIn").value = 0;
+    saveDayFields();
+  });
+  $("#saveDayBtn").addEventListener("click", saveDayFields);
+}
+
+function onMealListClick(ev) {
+  const b = ev.target.closest("[data-act]"); if (!b) return;
+  const act = b.dataset.act;
+  const d = ensureDay(state.date);
+
+  if (act === "edit") { state.editingMeal = b.dataset.id; renderDay(); return; }
+  if (act === "cancel-edit") { state.editingMeal = null; renderDay(); return; }
+  if (act === "del") {
+    if (!confirm("この記録を削除します。よろしいですか。")) return;
+    d.meals = d.meals.filter(x => x.id !== b.dataset.id);
+    save(); state.editingMeal = null; renderDay(); return;
+  }
+  if (act === "save-edit") {
+    const m = d.meals.find(x => x.id === b.dataset.id); if (!m) return;
+    m.label = $("#ed-label").value.trim() || m.label;
+    m.salt = num($("#ed-salt").value);
+    m.kcal = num($("#ed-kcal").value);
+    m.potassium = num($("#ed-k").value);
+    m.slot = $("#ed-slot").value;
+    m.note = $("#ed-note").value.trim();
+    m.source = $("#ed-meas").checked ? "measured" : (m.source === "ai" ? "ai" : "manual");
+    m.edited = true;
+    save(); state.editingMeal = null; renderDay();
+    flash("修正を保存しました。", "ok");
+  }
+}
+
+function addManualMeal() {
+  const d = ensureDay(state.date);
+  const label = (state.mealText || "").trim() || "食事";
+  const meal = {
+    id: uid(), label, salt: 0, kcal: 0, potassium: 0, note: "",
+    slot: state.slot, photo: DB.settings.savePhoto ? state.photoThumb : null,
+    modifiers: Object.keys(state.mods).filter(k => state.mods[k]),
+    source: "manual", edited: true
+  };
+  d.meals.push(meal);
+  save();
+  state.editingMeal = meal.id;
+  state.photoFull = null; state.photoThumb = null; state.mods = {}; state.mealText = "";
+  renderDay();
+}
+
+function acceptEstimate() {
+  const e = state.estimate; if (!e) return;
+  const d = ensureDay(state.date);
+  const total = e.total || {};
+  d.meals.push({
+    id: uid(),
+    label: e.label || "食事",
+    salt: r1(num(total.salt)),
+    kcal: Math.round(num(total.kcal)),
+    potassium: Math.round(num(total.potassium)),
+    note: (e.items || []).map(i => i.name + " " + r1(num(i.salt)) + "g").join("、"),
+    slot: state.slot,
+    photo: DB.settings.savePhoto ? state.photoThumb : null,
+    modifiers: Object.keys(state.mods).filter(k => state.mods[k]),
+    source: "ai",
+    edited: false
+  });
+  if (num(total.alcohol_g) > 0) {
+    d.alcohol = r1(num(d.alcohol) + num(total.alcohol_g));
+    d.noAlcohol = false;
+  }
+  save();
+  state.estimate = null; state.photoFull = null; state.photoThumb = null;
+  state.mods = {}; state.mealText = "";
+  renderDay();
+  flash("記録しました。数値は「修正」から直せます。", "ok");
+}
+
+function addBp() {
+  const sys = num($("#bpSys").value, 0), dia = num($("#bpDia").value, 0);
+  if (!sys || !dia) { flash("上と下の両方を入れてください。", "err"); return; }
+  const d = ensureDay(state.date);
+  d.bp.push({
+    id: uid(), sys, dia,
+    pulse: num($("#bpPulse").value, 0) || null,
+    tag: $("#bpTag").value,
+    time: $("#bpTime").value || nowTime(),
+    drank: $("#bpDrank").checked
+  });
+  save(); renderDay();
+}
+
+// 「2026-08-26 朝 116/84 68」形式。日付と区分は省略できる。
+function importBpText() {
+  const text = $("#bpPaste").value || "";
+  let added = 0;
+  text.split(/\r?\n/).forEach(line => {
+    const s = line.trim(); if (!s) return;
+    const mm = s.match(/(\d{2,3})\s*[\/／]\s*(\d{2,3})/);
+    if (!mm) return;
+    const dm = s.match(/(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+    const date = dm
+      ? dm[1] + "-" + String(dm[2]).padStart(2, "0") + "-" + String(dm[3]).padStart(2, "0")
+      : state.date;
+    const tag = /夜|晩|夕/.test(s) ? "夜" : "朝";
+    const tm = s.match(/(\d{1,2}):(\d{2})/);
+    const rest = s.replace(mm[0], " ");
+    const pm = rest.match(/(?:^|\s)(\d{2,3})(?:\s|$)/);
+    ensureDay(date).bp.push({
+      id: uid(), sys: num(mm[1]), dia: num(mm[2]),
+      pulse: pm ? num(pm[1]) : null,
+      tag,
+      time: tm ? tm[0] : (tag === "朝" ? "07:00" : "21:00"),
+      drank: /飲|酒/.test(s)
+    });
+    added++;
+  });
+  if (!added) { flash("読み取れる行がありませんでした。", "err"); return; }
+  save(); renderDay();
+  flash(added + " 件を読み込みました。", "ok");
+}
+
+function saveDayFields() {
+  const d = ensureDay(state.date);
+  d.alcohol = num($("#alcoholIn").value);
+  if (d.alcohol > 0) d.noAlcohol = false;
+  d.meds = ($("#medsIn").value || "").trim();
+  d.memo = ($("#memoIn").value || "").trim();
+  save(); renderDay();
+  flash("保存しました。", "ok");
+}
+
+/* =========================================================
+   5. 画像の縮小
+   canvas で描き直すため、EXIF（撮影日時）は消えます。
+   日付は画面上の「日付」欄の値を使います。
+   ========================================================= */
+function shrinkImage(file, maxEdge, quality) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, maxEdge / Math.max(img.width, img.height));
+      const w = Math.max(1, Math.round(img.width * scale));
+      const h = Math.max(1, Math.round(img.height * scale));
+      const c = document.createElement("canvas");
+      c.width = w; c.height = h;
+      c.getContext("2d").drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      resolve(c.toDataURL("image/jpeg", quality));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("画像を読めません")); };
+    img.src = url;
+  });
+}
+
+/* =========================================================
+   6. Claude API での推定
+   ========================================================= */
+const DOMAIN_KNOWLEDGE = `
+# 推定の基準（日本の外食・コンビニ食の実態）
+これは実測にもとづく目安です。一般的な栄養データより、こちらを優先します。
+
+| 品目 | 食塩相当量の目安 |
+|---|---|
+| ラーメン・担々麺（スープ完飲） | 6〜8g |
+| ラーメン・担々麺（スープを残す） | 4〜5g |
+| かけうどん・そば（つゆ完飲） | 5〜6g |
+| ぶっかけうどん | 3.5〜4g |
+| 麺類＋ご飯もののセット | 7〜8g |
+| チャーハン（並） | 2.5g（半サイズ 1.3g） |
+| 餃子6個＋タレ | 1.2g（3個 0.6g） |
+| 味噌汁 1杯 | 1.4g |
+| 漬物・キムチ・小鉢 | 各 0.5〜1.5g |
+| 天ぷら 1品 | 0.5g |
+| 納豆＋タレ | 0.4g |
+| いなり寿司 1個 | 0.5g |
+| 梅干し 1個 | 2g |
+| 食パン 1枚 | 0.8g |
+| シーザーサラダ＋ベーコン | 2.3〜3.0g |
+| ステーキ（シェア1人分） | 1.5〜2.5g |
+| 定食類（全体） | 4〜4.5g |
+
+# 判明している法則
+- 1日6gを超えるのは、ほぼ外食と飲酒が重なった日です。
+- 汁物が2回以上重なると超えます。味噌汁と麺つゆの組み合わせが典型です。
+- 単品ではなく組み合わせが問題です。担々麺だけなら5g、半チャーハンを足すと6.5gです。
+- 外食ではカリウム源が構造的に不足します。
+
+# 修飾情報の扱い
+- 汁を残した：麺類の塩分を 2〜3g 下げます。
+- 汁を全部飲んだ：上限側の値を使います。
+- 半サイズ：その品目を約半分にします。
+- 大盛：その品目を約1.3倍にします。
+- シェアした：その品目を約半分にします。
+- タレは別添え／かけていない：タレ分を 0〜0.2g にします。
+- 漬物を残した：漬物分を 0.1g 以下にします。
+- 情報がない時は、標準の提供状態で推定します。汁は飲み、タレはかけたものとします。
+
+# 良い習慣の検出
+次が読み取れたら praise に短く書きます。褒める以外のことは書きません。
+麺類のスープを残す／定食の汁物や漬物を残す／もずく酢の酢を残す／めかぶ・納豆のタレを控える／
+ドレッシングを別皿にする／シェアする／半サイズを選ぶ／食塩無添加のトマトジュース／
+塩を使わない自作ピクルス／無塩そばの自炊／野菜・果物・海藻・豆をとる。
+
+# 質問
+推定が 0.5g 以上変わりうる不明点があれば、questions に最大2つ書きます。
+短い疑問文にします。例：「スープは残しましたか」「餃子は何個ですか」
+`.trim();
+
+const SYSTEM_PROMPT = `
+あなたは日本の外食とコンビニ食にくわしい栄養推定の担当です。
+食事の内容から、食塩相当量（g）、エネルギー（kcal）、カリウム（mg）、純アルコール（g）を推定します。
+
+# 絶対に守ること
+医療判断をしません。薬の名前、用量、その増減、診断名、治療方針に触れません。
+血圧の評価、受診の要否、健康状態の判定を書きません。
+不安をあおる表現や警告を書きません。
+書いてよいのは、栄養素の推定値と、食べ方・選び方の助言だけです。
+
+# 文体
+1文は40字前後にします。1文に動作を2つ入れません。
+結論を最初に置きます。前置きを書きません。
+比喩を使いません。用語は1つに固定します。
+advice は1〜2点にします。多く書きません。
+
+${DOMAIN_KNOWLEDGE}
+`.trim();
+
+const ESTIMATE_SCHEMA = {
+  type: "object",
+  properties: {
+    label: { type: "string", description: "食事全体の短い名前。20字以内。" },
+    items: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          name: { type: "string" },
+          salt: { type: "number" },
+          kcal: { type: "number" },
+          potassium: { type: "number" },
+          note: { type: "string" }
+        },
+        required: ["name", "salt", "kcal", "potassium", "note"],
+        additionalProperties: false
+      }
+    },
+    total: {
+      type: "object",
+      properties: {
+        salt: { type: "number" },
+        kcal: { type: "number" },
+        potassium: { type: "number" },
+        alcohol_g: { type: "number" }
+      },
+      required: ["salt", "kcal", "potassium", "alcohol_g"],
+      additionalProperties: false
+    },
+    confidence: { type: "string", enum: ["high", "medium", "low"] },
+    questions: { type: "array", items: { type: "string" } },
+    advice: { type: "array", items: { type: "string" } },
+    praise: { type: "array", items: { type: "string" } }
+  },
+  required: ["label", "items", "total", "confidence", "questions", "advice", "praise"],
+  additionalProperties: false
+};
+
+function buildUserContent() {
+  const text = (state.mealText || "").trim();
+  const mods = MODIFIERS.filter(m => state.mods[m.id]).map(m => m.label);
+  const t = dayTotals(state.date);
+
+  const lines = [];
+  lines.push("次の食事を推定してください。");
+  lines.push("区分：" + state.slot);
+  if (text) lines.push("内容：" + text);
+  else lines.push("内容：写真のとおりです。");
+  if (mods.length) lines.push("補足：" + mods.join("、"));
+  lines.push("この日はここまでで、塩分 " + t.salt.toFixed(1) + "g を記録済みです。");
+  lines.push("目標は1日 " + num(DB.settings.saltGoal, 6) + "g 以内です。");
+  lines.push("JSON だけを返してください。");
+
+  const content = [];
+  if (state.photoFull) {
+    content.push({
+      type: "image",
+      source: { type: "base64", media_type: "image/jpeg", data: state.photoFull.split(",")[1] }
+    });
+  }
+  content.push({ type: "text", text: lines.join("\n") });
+  return content;
+}
+
+async function callClaude(body) {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-api-key": DB.settings.apiKey,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true"
+    },
+    body: JSON.stringify(body)
+  });
+  const json = await res.json().catch(() => null);
+  if (!res.ok) {
+    const detail = json && json.error ? json.error.message : "HTTP " + res.status;
+    const err = new Error(detail);
+    err.status = res.status;
+    throw err;
+  }
+  return json;
+}
+
+// 応答からテキスト部分だけを取り出す。thinking ブロックは飛ばす。
+function textOf(msg) {
+  return (msg.content || [])
+    .filter(b => b.type === "text")
+    .map(b => b.text)
+    .join("");
+}
+
+// ```json のフェンスが付いた場合に備えて剥がす。
+function parseJsonLoose(text) {
+  let s = String(text).trim();
+  const fence = s.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/);
+  if (fence) s = fence[1].trim();
+  try { return JSON.parse(s); } catch (e) { /* 続けて括弧で切り出す */ }
+  const a = s.indexOf("{"), b = s.lastIndexOf("}");
+  if (a >= 0 && b > a) return JSON.parse(s.slice(a, b + 1));
+  throw new Error("推定結果を読み取れませんでした。");
+}
+
+async function runEstimate() {
+  if (!DB.settings.apiKey) {
+    flash("先に「設定」で API キーを入れてください。", "err");
+    return;
+  }
+  const text = (state.mealText || "").trim();
+  if (!text && !state.photoFull) {
+    flash("食べたものを書くか、写真を選んでください。", "err");
+    return;
+  }
+
+  state.busy = true; state.estimate = null; renderDay();
+
+  const content = buildUserContent();
+  const base = {
+    model: DB.settings.model,
+    max_tokens: 16000,
+    system: SYSTEM_PROMPT,
+    thinking: { type: "adaptive" },
+    messages: [{ role: "user", content }]
+  };
+
+  try {
+    let msg;
+    try {
+      msg = await callClaude(Object.assign({}, base, {
+        output_config: { effort: "medium", format: { type: "json_schema", schema: ESTIMATE_SCHEMA } }
+      }));
+    } catch (e) {
+      // 構造化出力が使えない場合は、指示だけで JSON を出させる。
+      if (e.status !== 400) throw e;
+      msg = await callClaude({
+        model: DB.settings.model,
+        max_tokens: 8000,
+        system: SYSTEM_PROMPT + "\n\n必ず JSON オブジェクトだけを返します。前後に文章を書きません。\n"
+          + "形は次のとおりです：" + JSON.stringify(ESTIMATE_SCHEMA.properties),
+        messages: [{ role: "user", content }]
+      });
+    }
+    state.estimate = parseJsonLoose(textOf(msg));
+  } catch (e) {
+    state.busy = false; renderDay();
+    flash("推定に失敗しました：" + e.message, "err");
+    return;
+  }
+  state.busy = false;
+  renderDay();
+}
+
+/* =========================================================
+   7. 週次レポート
+   ========================================================= */
+function renderReport() {
+  const end = state.reportEnd;
+  const dates = rangeDates(end, 7);
+  const goal = num(DB.settings.saltGoal, 6);
+  const gs = num(DB.settings.bpGoalSys, 135);
+  const gd = num(DB.settings.bpGoalDia, 85);
+
+  const salts = dates.map(d => dayTotals(d).salt);
+  const recorded = dates.filter((d, i) => dayOf(d).meals.length > 0);
+  const avgSalt = recorded.length
+    ? r1(recorded.reduce((s, d) => s + dayTotals(d).salt, 0) / recorded.length) : 0;
+  const okDays = recorded.filter(d => dayTotals(d).salt <= goal).length;
+  const morns = dates.map(d => morningBp(d));
+  const mornSys = morns.filter(Boolean).map(b => num(b.sys));
+  const avgSys = mornSys.length ? Math.round(mornSys.reduce((a, b) => a + b, 0) / mornSys.length) : null;
+  const alcFree = dates.filter(d => dayOf(d).noAlcohol && num(dayOf(d).alcohol) === 0).length;
+  const avgK = recorded.length
+    ? Math.round(recorded.reduce((s, d) => s + dayTotals(d).potassium, 0) / recorded.length) : 0;
+
+  const medRows = [];
+  let prev = null;
+  dates.forEach(d => {
+    const v = (DB.days[d] && DB.days[d].meds) || "";
+    if (v !== prev) { medRows.push({ from: d, value: v }); prev = v; }
+  });
+
+  const html = `
+  <div class="panel no-print">
+    <h2>期間</h2>
+    <div class="row">
+      <button class="btn sm" id="repPrev">← 前の7日</button>
+      <div class="field"><label for="repEnd">最終日</label><input type="date" id="repEnd" value="${end}"></div>
+      <button class="btn sm" id="repNext">次の7日 →</button>
+      <button class="btn sm" id="repToday">今日まで</button>
+      <span style="margin-left:auto"></span>
+      <button class="btn sm" id="printBtn">印刷 / PDF</button>
+      <button class="btn sm" id="svgBtn">グラフを保存</button>
+    </div>
+    <p class="hint" style="margin-top:8px">「印刷 / PDF」でそのまま受診に持参できます。</p>
+  </div>
+
+  <div class="report" id="reportPaper">
+    <h2>食事と血圧の記録</h2>
+    <div class="period">${fmtMD(dates[0])}（${weekday(dates[0])}）〜 ${fmtMD(end)}（${weekday(end)}）　全7日</div>
+
+    <div class="rep-stats">
+      <div class="stat"><div class="k">平均塩分</div><div class="v" style="color:${avgSalt > goal ? "var(--over)" : "var(--good)"}">${avgSalt.toFixed(1)}<span style="font-size:12px"> g</span></div></div>
+      <div class="stat"><div class="k">目標 ${goal}g 以内</div><div class="v">${okDays}<span style="font-size:12px"> / ${recorded.length} 日</span></div></div>
+      <div class="stat"><div class="k">朝の収縮期 平均</div><div class="v" style="color:${avgSys != null && avgSys >= gs ? "var(--over)" : "var(--good)"}">${avgSys == null ? "—" : avgSys}</div></div>
+      <div class="stat"><div class="k">休肝日</div><div class="v">${alcFree}<span style="font-size:12px"> 日</span></div></div>
+      <div class="stat"><div class="k">平均カリウム</div><div class="v">${avgK}<span style="font-size:12px"> mg</span></div></div>
+    </div>
+
+    <div id="saltChart">${wrapSvg(saltChartInner(dates, salts, goal, medRows), CH_SALT_H, "7日間の食塩相当量")}</div>
+    <p class="cap">棒は1日の食塩相当量です。横線が目標の ${goal}g です。超えた日は朱色にしています。</p>
+
+    <div id="bpChart">${wrapSvg(bpChartInner(dates, morns, gs, gd), CH_BP_H, "7日間の朝の血圧")}</div>
+    <p class="cap">朝・服薬前の血圧です。帯の上に出た点だけを朱色にしています。飲酒後の値は除いています。</p>
+
+    <h3 style="font-size:14px;margin-top:18px">服薬メモ</h3>
+    ${medRows.length ? `<table class="med"><thead><tr><th style="width:90px">開始</th><th>内容</th></tr></thead><tbody>
+      ${medRows.map(r => `<tr><td>${fmtMD(r.from)}</td><td>${r.value ? esc(r.value) : "記録なし"}</td></tr>`).join("")}
+    </tbody></table>` : `<div class="empty">記録がありません。</div>`}
+
+    <h3 style="font-size:14px;margin-top:18px">日ごとの内訳</h3>
+    <table class="med">
+      <thead><tr><th>日付</th><th>塩分</th><th>朝の血圧</th><th>夜の血圧</th><th>純アルコール</th><th>メモ</th></tr></thead>
+      <tbody>
+        ${dates.map(d => {
+          const t = dayTotals(d);
+          const dd = dayOf(d);
+          const m = morningBp(d);
+          const night = dd.bp.filter(b => b.tag === "夜")[0];
+          const has = dd.meals.length > 0;
+          return `<tr>
+            <td>${fmtMD(d)}（${weekday(d)}）</td>
+            <td style="color:${has && t.salt > goal ? "var(--over)" : "inherit"};font-variant-numeric:tabular-nums">${has ? t.salt.toFixed(1) + " g" : "—"}</td>
+            <td style="font-variant-numeric:tabular-nums">${m ? m.sys + "/" + m.dia : "—"}</td>
+            <td style="font-variant-numeric:tabular-nums">${night ? night.sys + "/" + night.dia + (night.drank ? " ※" : "") : "—"}</td>
+            <td style="font-variant-numeric:tabular-nums">${dd.noAlcohol ? "休肝日" : (hasRecord(d) ? r1(num(dd.alcohol)) + " g" : "—")}</td>
+            <td>${esc(dd.memo)}</td>
+          </tr>`;
+        }).join("")}
+      </tbody>
+    </table>
+    <p class="cap" style="margin-top:6px">※ は飲酒後の測定です。</p>
+
+    <div class="disclaim">
+      この記録は本人が付けたものです。推定値は目安であり、実測ではありません。
+      判断は主治医にお任せします。
+    </div>
+  </div>`;
+
+  $("#view-report").innerHTML = html;
+
+  $("#repPrev").addEventListener("click", () => { state.reportEnd = shiftDate(state.reportEnd, -7); renderReport(); });
+  $("#repNext").addEventListener("click", () => { state.reportEnd = shiftDate(state.reportEnd, 7); renderReport(); });
+  $("#repToday").addEventListener("click", () => { state.reportEnd = todayStr(); renderReport(); });
+  $("#repEnd").addEventListener("change", ev => { state.reportEnd = ev.target.value || todayStr(); renderReport(); });
+  $("#printBtn").addEventListener("click", () => window.print());
+  $("#svgBtn").addEventListener("click", () => {
+    downloadFile("saltlog-" + end + ".svg",
+      combinedSvg(dates, salts, goal, medRows, morns, gs, gd), "image/svg+xml");
+  });
+}
+
+/* --- グラフ ---
+   inner を返す関数と、それを <svg> で包む関数に分けています。
+   保存の時は inner を 1 枚の SVG に並べます。 --- */
+const CH_W = 700, CH_SALT_H = 268, CH_BP_H = 250;
+
+function saltChartInner(dates, salts, goal, medRows) {
+  const W = CH_W, H = CH_SALT_H, L = 44, R = 62, T = 62, B = 44;
+  const iw = W - L - R, ih = H - T - B;
+  const maxV = Math.max(goal * 1.5, Math.ceil(Math.max.apply(null, salts.concat([goal])) + 1));
+  const y = v => T + ih - (v / maxV) * ih;
+  const bw = iw / dates.length;
+  const parts = [];
+
+  parts.push(`<text x="${L}" y="16" font-size="12" fill="#22262A" font-weight="600">食塩相当量（g）</text>`);
+
+  /* 服薬の記録が続いた期間を帯で示す */
+  const bandY = 26, bandH = 16;
+  parts.push(`<text x="${L}" y="${bandY + 12}" font-size="10" fill="#6B7278" text-anchor="end" dx="-6">薬</text>`);
+  medRows.forEach((r, i) => {
+    const a = Math.max(0, dates.indexOf(r.from));
+    const next = medRows[i + 1];
+    const b = next ? Math.max(a, dates.indexOf(next.from)) : dates.length;
+    const x1 = L + a * bw, x2 = L + b * bw;
+    const w = Math.max(0, x2 - x1);
+    if (!w) return;
+    const fill = r.value ? (i % 2 ? "#D7E3D2" : "#E7EEE4") : "#F2F4F1";
+    parts.push(`<rect x="${x1}" y="${bandY}" width="${w}" height="${bandH}" fill="${fill}" stroke="#fff" stroke-width="1"/>`);
+    const label = r.value || "記録なし";
+    if (w > label.length * 9 + 8) {
+      parts.push(`<text x="${x1 + w / 2}" y="${bandY + 11.5}" font-size="10" fill="#4A5450" text-anchor="middle">${esc(label)}</text>`);
+    } else if (w > 26) {
+      parts.push(`<text x="${x1 + 4}" y="${bandY + 11.5}" font-size="10" fill="#4A5450">${esc(label.slice(0, Math.max(1, Math.floor(w / 10))))}…</text>`);
+    }
+    if (i > 0) {
+      parts.push(`<line x1="${x1}" y1="${bandY}" x2="${x1}" y2="${T + ih}" stroke="#8FA69A" stroke-width="1" stroke-dasharray="3 3"/>`);
+    }
+  });
+
+  /* 目盛 */
+  for (let v = 0; v <= maxV; v += 2) {
+    parts.push(`<line x1="${L}" y1="${y(v)}" x2="${L + iw}" y2="${y(v)}" stroke="#EDF1EA" stroke-width="1"/>`);
+    parts.push(`<text x="${L - 8}" y="${y(v) + 4}" font-size="11" fill="#6B7278" text-anchor="end">${v}</text>`);
+  }
+
+  /* 目標より下を帯にする */
+  parts.push(`<rect x="${L}" y="${y(goal)}" width="${iw}" height="${T + ih - y(goal)}" fill="#EBF1E9"/>`);
+
+  dates.forEach((d, i) => {
+    const v = salts[i];
+    const has = dayOf(d).meals.length > 0;
+    const x = L + i * bw + bw * 0.22;
+    const w = bw * 0.56;
+    if (has) {
+      const over = v > goal;
+      parts.push(`<rect x="${x}" y="${y(v)}" width="${w}" height="${Math.max(1, T + ih - y(v))}" rx="3" fill="${over ? "#B8412A" : "#2F6F4E"}"/>`);
+      parts.push(`<text x="${x + w / 2}" y="${y(v) - 6}" font-size="11" fill="${over ? "#B8412A" : "#2F6F4E"}" text-anchor="middle" font-weight="600">${v.toFixed(1)}</text>`);
+    } else {
+      parts.push(`<text x="${x + w / 2}" y="${T + ih - 6}" font-size="11" fill="#B4BAB2" text-anchor="middle">—</text>`);
+    }
+    parts.push(`<text x="${x + w / 2}" y="${H - 22}" font-size="11" fill="#22262A" text-anchor="middle">${fmtMD(d)}</text>`);
+    parts.push(`<text x="${x + w / 2}" y="${H - 8}" font-size="10" fill="#6B7278" text-anchor="middle">${weekday(d)}</text>`);
+  });
+
+  parts.push(`<line x1="${L}" y1="${y(goal)}" x2="${L + iw}" y2="${y(goal)}" stroke="#22262A" stroke-width="1.5"/>`);
+  parts.push(`<text x="${L + iw + 6}" y="${y(goal) + 4}" font-size="10.5" fill="#22262A">目標 ${goal}g</text>`);
+
+  return parts.join("");
+}
+
+function bpChartInner(dates, morns, gs, gd) {
+  const W = CH_W, H = CH_BP_H, L = 44, R = 62, T = 26, B = 44;
+  const iw = W - L - R, ih = H - T - B;
+  const vals = [];
+  morns.forEach(b => { if (b) { vals.push(num(b.sys)); vals.push(num(b.dia)); } });
+  const hi = Math.max(gs + 15, Math.ceil((Math.max.apply(null, vals.concat([gs])) + 8) / 10) * 10);
+  const lo = Math.min(gd - 15, Math.floor((Math.min.apply(null, vals.concat([gd])) - 8) / 10) * 10);
+  const y = v => T + ih - ((v - lo) / (hi - lo)) * ih;
+  const bw = iw / dates.length;
+  const cx = i => L + i * bw + bw / 2;
+  const parts = [];
+
+  /* 目安より下を帯にする */
+  parts.push(`<rect x="${L}" y="${y(gs)}" width="${iw}" height="${T + ih - y(gs)}" fill="#EBF1E9"/>`);
+
+  for (let v = Math.ceil(lo / 20) * 20; v <= hi; v += 20) {
+    parts.push(`<line x1="${L}" y1="${y(v)}" x2="${L + iw}" y2="${y(v)}" stroke="#EDF1EA" stroke-width="1"/>`);
+    parts.push(`<text x="${L - 8}" y="${y(v) + 4}" font-size="11" fill="#6B7278" text-anchor="end">${v}</text>`);
+  }
+
+  parts.push(`<line x1="${L}" y1="${y(gs)}" x2="${L + iw}" y2="${y(gs)}" stroke="#22262A" stroke-width="1.2" stroke-dasharray="5 4"/>`);
+  parts.push(`<text x="${L + iw + 6}" y="${y(gs) + 4}" font-size="10.5" fill="#22262A">目安 ${gs}</text>`);
+  parts.push(`<line x1="${L}" y1="${y(gd)}" x2="${L + iw}" y2="${y(gd)}" stroke="#2C6FA8" stroke-width="1.2" stroke-dasharray="5 4"/>`);
+  parts.push(`<text x="${L + iw + 6}" y="${y(gd) + 4}" font-size="10.5" fill="#2C6FA8">目安 ${gd}</text>`);
+
+  const line = (key, color) => {
+    let d = "", started = false;
+    dates.forEach((dt, i) => {
+      const b = morns[i];
+      if (!b) { started = false; return; }
+      d += (started ? " L" : " M") + cx(i) + " " + y(num(b[key]));
+      started = true;
+    });
+    if (d) parts.push(`<path d="${d.trim()}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>`);
+  };
+  line("sys", "#6B7278");
+  line("dia", "#8FA9C4");
+
+  dates.forEach((dt, i) => {
+    const b = morns[i];
+    parts.push(`<text x="${cx(i)}" y="${H - 22}" font-size="11" fill="#22262A" text-anchor="middle">${fmtMD(dt)}</text>`);
+    parts.push(`<text x="${cx(i)}" y="${H - 8}" font-size="10" fill="#6B7278" text-anchor="middle">${weekday(dt)}</text>`);
+    if (!b) return;
+    const sys = num(b.sys), dia = num(b.dia);
+    const sc = sys >= gs ? "#B8412A" : "#2F6F4E";
+    const dc = dia >= gd ? "#B8412A" : "#2C6FA8";
+    parts.push(`<circle cx="${cx(i)}" cy="${y(sys)}" r="4" fill="${sc}"/>`);
+    parts.push(`<text x="${cx(i)}" y="${y(sys) - 9}" font-size="10.5" fill="${sc}" text-anchor="middle" font-weight="600">${sys}</text>`);
+    parts.push(`<circle cx="${cx(i)}" cy="${y(dia)}" r="4" fill="${dc}"/>`);
+    parts.push(`<text x="${cx(i)}" y="${y(dia) + 16}" font-size="10.5" fill="${dc}" text-anchor="middle" font-weight="600">${dia}</text>`);
+  });
+
+  parts.push(`<text x="${L}" y="14" font-size="12" fill="#22262A" font-weight="600">朝の血圧（起床後・服薬前）</text>`);
+
+  return parts.join("");
+}
+
+function wrapSvg(inner, h, label) {
+  return `<svg viewBox="0 0 ${CH_W} ${h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${label}">`
+    + `<rect x="0" y="0" width="${CH_W}" height="${h}" fill="#fff"/>${inner}</svg>`;
+}
+
+function combinedSvg(dates, salts, goal, medRows, morns, gs, gd) {
+  const h = CH_SALT_H + CH_BP_H + 12;
+  return '<?xml version="1.0" encoding="UTF-8"?>\n'
+    + `<svg xmlns="http://www.w3.org/2000/svg" width="${CH_W}" height="${h}" viewBox="0 0 ${CH_W} ${h}">`
+    + `<rect x="0" y="0" width="${CH_W}" height="${h}" fill="#FFFFFF"/>`
+    + `<g>${saltChartInner(dates, salts, goal, medRows)}</g>`
+    + `<g transform="translate(0,${CH_SALT_H + 12})">${bpChartInner(dates, morns, gs, gd)}</g>`
+    + `</svg>`;
+}
+
+/* =========================================================
+   8. 設定・書き出し
+   ========================================================= */
+function renderSettings() {
+  const s = DB.settings;
+  $("#view-settings").innerHTML = `
+  <div class="panel">
+    <h2>API キー</h2>
+    <p class="hint">推定に Claude API を使います。キーはこの端末のブラウザにだけ保存されます。外には送りません。</p>
+    <div class="row">
+      <div class="field" style="flex:1;min-width:260px">
+        <label for="apiKeyIn">API キー</label>
+        <input type="password" id="apiKeyIn" placeholder="sk-ant-..." value="${esc(s.apiKey)}" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="modelIn">モデル</label>
+        <select id="modelIn">
+          <option value="claude-sonnet-4-6" ${s.model === "claude-sonnet-4-6" ? "selected" : ""}>claude-sonnet-4-6（仕様書の指定）</option>
+          <option value="claude-sonnet-5" ${s.model === "claude-sonnet-5" ? "selected" : ""}>claude-sonnet-5（新しく、安い）</option>
+          <option value="claude-opus-5" ${s.model === "claude-opus-5" ? "selected" : ""}>claude-opus-5（最も高性能）</option>
+        </select>
+      </div>
+    </div>
+    <p class="hint" style="margin-top:10px">
+      キーはブラウザの保存領域に入ります。共用の端末では使わないでください。
+    </p>
+  </div>
+
+  <div class="panel">
+    <h2>目標</h2>
+    <div class="row">
+      <div class="field"><label for="goalSalt">1日の塩分（g 以内）</label><input type="number" id="goalSalt" step="0.5" value="${num(s.saltGoal, 6)}"></div>
+      <div class="field"><label for="goalSys">血圧の目安 上</label><input type="number" id="goalSys" value="${num(s.bpGoalSys, 135)}"></div>
+      <div class="field"><label for="goalDia">血圧の目安 下</label><input type="number" id="goalDia" value="${num(s.bpGoalDia, 85)}"></div>
+      <div class="field"><label for="savePhoto">写真を保存</label>
+        <div style="padding:8px 0"><input type="checkbox" id="savePhoto" ${s.savePhoto ? "checked" : ""}></div></div>
+    </div>
+    <div class="row" style="margin-top:12px"><button class="btn primary" id="saveSettings">保存</button></div>
+    <div id="flash-settings"></div>
+  </div>
+
+  <div class="panel">
+    <h2>データの持ち出し</h2>
+    <p class="hint">端末をまたぐには、書き出したファイルを別の端末で読み込みます。</p>
+    <div class="row">
+      <button class="btn" id="expJson">まるごと書き出す（JSON）</button>
+      <button class="btn" id="expDaily">日ごと（CSV）</button>
+      <button class="btn" id="expMeals">食事（CSV）</button>
+      <button class="btn" id="expBp">血圧（CSV）</button>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <div class="field">
+        <label for="impFile">読み込む（JSON）</label>
+        <input type="file" id="impFile" accept="application/json,.json">
+      </div>
+    </div>
+    <p class="hint" style="margin-top:10px">読み込むと、同じ日付の記録は置き換わります。先に書き出して控えを取ってください。</p>
+  </div>
+
+  <div class="panel">
+    <h2>この記録について</h2>
+    <p class="hint" style="margin:0">
+      推定値は目安です。実測ではありません。
+      このアプリは記録と可視化だけを行います。薬や治療の判断は含みません。
+    </p>
+  </div>`;
+
+  $("#saveSettings").addEventListener("click", () => {
+    DB.settings.apiKey = $("#apiKeyIn").value.trim();
+    DB.settings.model = $("#modelIn").value;
+    DB.settings.saltGoal = num($("#goalSalt").value, 6);
+    DB.settings.bpGoalSys = num($("#goalSys").value, 135);
+    DB.settings.bpGoalDia = num($("#goalDia").value, 85);
+    DB.settings.savePhoto = $("#savePhoto").checked;
+    save();
+    flash("保存しました。", "ok", $("#flash-settings"));
+  });
+
+  $("#expJson").addEventListener("click", () =>
+    downloadFile("saltlog-" + todayStr() + ".json", JSON.stringify(DB, null, 2), "application/json"));
+  $("#expDaily").addEventListener("click", () => downloadFile("daily-" + todayStr() + ".csv", csvDaily(), "text/csv"));
+  $("#expMeals").addEventListener("click", () => downloadFile("meals-" + todayStr() + ".csv", csvMeals(), "text/csv"));
+  $("#expBp").addEventListener("click", () => downloadFile("bp-" + todayStr() + ".csv", csvBp(), "text/csv"));
+
+  $("#impFile").addEventListener("change", async ev => {
+    const f = ev.target.files && ev.target.files[0]; if (!f) return;
+    try {
+      const parsed = JSON.parse(await f.text());
+      if (!parsed || typeof parsed.days !== "object") throw new Error("形式が違います");
+      Object.assign(DB.days, parsed.days);
+      save(); renderAll();
+      flash("読み込みました。", "ok", $("#flash-settings"));
+    } catch (e) {
+      flash("読み込めませんでした：" + e.message, "err", $("#flash-settings"));
+    }
+    ev.target.value = "";
+  });
+}
+
+function csvCell(v) {
+  const s = String(v == null ? "" : v);
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+function csvOf(rows) {
+  return "\uFEFF" + rows.map(r => r.map(csvCell).join(",")).join("\r\n");
+}
+
+function csvDaily() {
+  const rows = [["日付", "塩分g", "kcal", "カリウムmg", "純アルコールg", "休肝日", "朝収縮期", "朝拡張期", "服薬メモ", "メモ"]];
+  Object.keys(DB.days).sort().forEach(d => {
+    const t = dayTotals(d), m = morningBp(d), dd = dayOf(d);
+    rows.push([d, t.salt, t.kcal, t.potassium, r1(num(dd.alcohol)), dd.noAlcohol ? "はい" : "",
+      m ? m.sys : "", m ? m.dia : "", dd.meds, dd.memo]);
+  });
+  return csvOf(rows);
+}
+function csvMeals() {
+  const rows = [["日付", "区分", "品目", "塩分g", "kcal", "カリウムmg", "由来", "補足", "メモ"]];
+  Object.keys(DB.days).sort().forEach(d => {
+    dayOf(d).meals.forEach(m => {
+      const mods = (m.modifiers || []).map(id => (MODIFIERS.find(x => x.id === id) || {}).label).filter(Boolean).join("・");
+      const src = m.source === "measured" ? "実測" : (m.edited ? "手で修正" : (m.source === "ai" ? "AI推定" : "手入力"));
+      rows.push([d, m.slot || "", m.label, r1(num(m.salt)), Math.round(num(m.kcal)), Math.round(num(m.potassium)), src, mods, m.note || ""]);
+    });
+  });
+  return csvOf(rows);
+}
+function csvBp() {
+  const rows = [["日付", "区分", "時刻", "収縮期", "拡張期", "脈拍", "飲酒後"]];
+  Object.keys(DB.days).sort().forEach(d => {
+    dayOf(d).bp.forEach(b => rows.push([d, b.tag, b.time || "", b.sys, b.dia, b.pulse || "", b.drank ? "はい" : ""]));
+  });
+  return csvOf(rows);
+}
+
+function downloadFile(name, text, mime) {
+  const blob = new Blob([text], { type: mime + ";charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/* =========================================================
+   9. 起動
+   ========================================================= */
+function setTab(name) {
+  state.tab = name;
+  ["day", "report", "settings"].forEach(t => {
+    $("#tab-" + t).setAttribute("aria-selected", String(t === name));
+    $("#view-" + t).hidden = (t !== name);
+  });
+  renderAll();
+}
+
+function renderAll() {
+  if (state.tab === "day") renderDay();
+  else if (state.tab === "report") renderReport();
+  else renderSettings();
+}
+
+function start() {
+  load();
+  state.date = todayStr();
+  state.reportEnd = todayStr();
+  const h = new Date().getHours();
+  state.slot = h < 10 ? "朝" : (h < 15 ? "昼" : (h < 22 ? "夜" : "間食"));
+
+  $("#theDate").value = state.date;
+  $("#theDate").addEventListener("change", ev => {
+    state.date = ev.target.value || todayStr();
+    state.editingMeal = null; state.estimate = null;
+    state.mealText = ""; state.mods = {};
+    state.photoFull = null; state.photoThumb = null;
+    renderAll();
+  });
+  $("#tab-day").addEventListener("click", () => setTab("day"));
+  $("#tab-report").addEventListener("click", () => setTab("report"));
+  $("#tab-settings").addEventListener("click", () => setTab("settings"));
+
+  renderDay();
+}
+
+start();
+</script>
+</body>
+</html>
