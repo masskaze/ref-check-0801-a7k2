@@ -1,0 +1,33 @@
+{
+  "pages": [
+    { "id": "page-1", "name": "採用（案C 方眼ノート）" },
+    { "id": "page-2", "name": "見送った案（A・B）" }
+  ],
+  "artboards": [
+    { "file": "Main.dc.html",    "title": "案C 方眼ノート／今日",         "page": "page-1", "x": 0,    "y": 0,   "w": 390, "h": 844 },
+    { "file": "ReportC.dc.html", "title": "案C 方眼ノート／週次レポート", "page": "page-1", "x": 470,  "y": 0,   "w": 794, "h": 1123, "print": "fixed" },
+    { "file": "TodayA.dc.html",  "title": "案A 記録用紙／今日",           "page": "page-2", "x": 202,  "y": 0,   "w": 390, "h": 844 },
+    { "file": "TodayB.dc.html",  "title": "案B 一日一枚／今日",           "page": "page-2", "x": 1076, "y": 0,   "w": 390, "h": 844 },
+    { "file": "ReportA.dc.html", "title": "案A 記録用紙／週次レポート",   "page": "page-2", "x": 0,    "y": 964, "w": 794, "h": 1123, "print": "fixed" },
+    { "file": "ReportB.dc.html", "title": "案B 一日一枚／週次レポート",   "page": "page-2", "x": 874,  "y": 964, "w": 794, "h": 1123, "print": "fixed" }
+  ],
+  "annotations": [
+    {
+      "id": "note-c",
+      "page": "page-1",
+      "x": 0,
+      "y": -210,
+      "w": 1264,
+      "text": "採用。saltlog/index.html に反映済み。\n7日分の帯を常に上に置く。数字は明朝。レポートは塩分と朝の血圧を同じ横軸でそろえ、6g を超えた日を縦の帯で貫く（仕様書 §3「家庭血圧と塩分の対応が見えること」）。\n早見表は廃止し、辞書を入力欄の裏で引く形に変えた。"
+    },
+    {
+      "id": "note-ab",
+      "page": "page-2",
+      "x": 0,
+      "y": -210,
+      "w": 1668,
+      "text": "見送った案。記録として残す。\n案A 記録用紙 … 白いパネルを積む。一望できるが、1食の記録に指の移動が多い。\n案B 一日一枚 … その日をカード1枚に。記録は速いが、週の流れが見えない。"
+    }
+  ],
+  "launch": { "view": "canvas", "page": "page-1" }
+}

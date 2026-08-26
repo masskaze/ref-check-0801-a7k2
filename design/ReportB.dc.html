@@ -1,0 +1,165 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; font-family: "Hiragino Kaku Gothic ProN","Yu Gothic Medium","Yu Gothic",Meiryo,system-ui,sans-serif; font-size: 15px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+    a { color: #3F6B52; } a:hover { color: #2F6F4E; }
+  </style>
+</helmet>
+
+<div style="width: 794px; height: 1123px; background: #FFFFFF; color: #22262A; padding: 48px 44px 44px; display: flex; flex-direction: column; overflow: hidden;">
+
+  <div style="display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid #22262A; padding-bottom: 8px;">
+    <div style="font-size: 20px; font-weight: 600; letter-spacing: .03em;">食事と血圧の記録</div>
+    <div style="margin-left: auto; font-size: 13px; color: #6B7278;">8/20（木）〜 8/26（水）　全7日</div>
+  </div>
+
+  <div style="display: flex; gap: 34px; padding: 18px 4px 20px; border-bottom: 1px solid #DDE3DA;">
+    <div>
+      <div style="font-size: 11.5px; color: #6B7278;">平均塩分</div>
+      <div style="font-size: 30px; font-weight: 600; color: #2F6F4E; font-variant-numeric: tabular-nums; line-height: 1.2;">5.9<span style="font-size: 14px; color: #6B7278;"> g</span></div>
+    </div>
+    <div>
+      <div style="font-size: 11.5px; color: #6B7278;">目標 6g 以内</div>
+      <div style="font-size: 30px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.2;">4<span style="font-size: 14px; color: #6B7278;"> / 7 日</span></div>
+    </div>
+    <div>
+      <div style="font-size: 11.5px; color: #6B7278;">朝の上　初日 → 最終日</div>
+      <div style="font-size: 30px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.2; color: #6B7278;">142<span style="font-size: 18px;"> → </span><span style="color: #2F6F4E;">124</span></div>
+    </div>
+    <div>
+      <div style="font-size: 11.5px; color: #6B7278;">休肝日</div>
+      <div style="font-size: 30px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.2;">4<span style="font-size: 14px; color: #6B7278;"> 日</span></div>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 104px 84px 1fr 56px 86px 92px 76px; gap: 0 10px; align-items: center; font-size: 11.5px; color: #6B7278; padding: 12px 0 6px; border-bottom: 1px solid #DDE3DA;">
+    <div>服薬</div>
+    <div>日付</div>
+    <div>塩分（目標 6g）</div>
+    <div style="text-align: right;">g</div>
+    <div>朝の血圧</div>
+    <div>夜の血圧</div>
+    <div>純アルコール</div>
+  </div>
+
+  <div style="display: flex;">
+    <div style="width: 104px; flex-shrink: 0; background: #E7EEE4; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 12.5px; color: #4A5450; border-bottom: 2px solid #FFFFFF;">降圧薬<br>10mg</div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column;">
+
+      <div style="display: grid; grid-template-columns: 84px 1fr 56px 86px 92px 76px; gap: 0 10px; align-items: center; padding: 0 0 0 10px; height: 72px; border-bottom: 1px solid #DDE3DA;">
+        <div><span style="font-size: 15px;">8/20</span><span style="font-size: 12px; color: #6B7278;">（木）</span></div>
+        <div style="position: relative;">
+          <div style="height: 22px; background: #EBF1E9; border-radius: 4px; overflow: hidden;"><div style="height: 22px; width: 86.7%; background: #B8412A;"></div></div>
+          <div style="position: absolute; top: -3px; bottom: -3px; left: 66.7%; width: 2px; background: #22262A; opacity: .55;"></div>
+        </div>
+        <div style="text-align: right; font-size: 19px; font-weight: 600; font-variant-numeric: tabular-nums; color: #B8412A;">7.8</div>
+        <div style="font-size: 16px; font-variant-numeric: tabular-nums;"><span style="color: #B8412A;">142</span><span style="color: #6B7278;">/</span><span style="color: #B8412A;">98</span></div>
+        <div style="font-size: 14px; font-variant-numeric: tabular-nums; color: #6B7278;">121/87 ※</div>
+        <div style="font-size: 14px; font-variant-numeric: tabular-nums;">24 g</div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 84px 1fr 56px 86px 92px 76px; gap: 0 10px; align-items: center; padding: 0 0 0 10px; height: 72px; border-bottom: 1px solid #DDE3DA;">
+        <div><span style="font-size: 15px;">8/21</span><span style="font-size: 12px; color: #6B7278;">（金）</span></div>
+        <div style="position: relative;">
+          <div style="height: 22px; background: #EBF1E9; border-radius: 4px; overflow: hidden;"><div style="height: 22px; width: 46.7%; background: #2F6F4E;"></div></div>
+          <div style="position: absolute; top: -3px; bottom: -3px; left: 66.7%; width: 2px; background: #22262A; opacity: .55;"></div>
+        </div>
+        <div style="text-align: right; font-size: 19px; font-weight: 600; font-variant-numeric: tabular-nums; color: #2F6F4E;">4.2</div>
+        <div style="font-size: 16px; font-variant-numeric: tabular-nums;"><span style="color: #B8412A;">140</span><span style="color: #6B7278;">/</span><span style="color: #B8412A;">96</span></div>
+        <div style="font-size: 14px; font-variant-numeric: tabular-nums; color: #6B7278;">132/94</div>
+        <div style="font-size: 14px; font-variant-numeric: tabular-nums;">休肝日</div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 84px 1fr 56px 86px 92px 76px; gap: 0 10px; align-items: center; padding: 0 0 0 10px; height: 72px; border-bottom: 1px solid #DDE3DA;">
+        <div><span style="font-size: 15px;">8/22</span><span style="font-size: 12px; color: #6B7278;">（土）</span></div>
+        <div style="position: relative;">
+          <div style="height: 22px; background: #EBF1E9; border-radius: 4px; overflow: hidden;"><div style="height: 22px; width: 67.8%; background: #B8412A;"></div></div>
+          <div style="position: absolute; top: -3px; bottom: -3px; left: 66.7%; width: 2px; background: #22262A; opacity: .55;"></div>
+        </div>
+        <div style="text-align: right; font-size: 19px; font-weight: 600; font-variant-numeric: tabular-nums; color: #B8412A;">6.1</div>
+        <div style="font-size: 16px; font-variant-numeric: tabular-nums;"><span style="color: #B8412A;">136</span><span style="color: #6B7278;">/</span><span style="color: #B8412A;">93</span></div>
+        <div style="font-size: 14px; font-variant-numeric: tabular-nums; color: #6B7278;">125/88 ※</div>
+        <div style="font-size: 14px; font-variant-numeric: tabular-nums;">18 g</div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 84px 1fr 56px 86px 92px 76px; gap: 0 10px; align-items: center; padding: 0 0 0 10px; height: 72px; border-bottom: 2px solid #C8D2C4;">
+        <div><span style="font-size: 15px;">8/23</span><span style="font-size: 12px; color: #6B7278;">（日）</span></div>
+        <div style="position: relative;">
+          <div style="height: 22px; background: #EBF1E9; border-radius: 4px; overflow: hidden;"><div style="height: 22px; width: 80%; background: #B8412A;"></div></div>
+          <div style="position: absolute; top: -3px; bottom: -3px; left: 66.7%; width: 2px; background: #22262A; opacity: .55;"></div>
+        </div>
+        <div style="text-align: right; font-size: 19px; font-weight: 600; font-variant-numeric: tabular-nums; color: #B8412A;">7.2</div>
+        <div style="font-size: 16px; font-variant-numeric: tabular-nums;"><span style="color: #2F6F4E;">133</span><span style="color: #6B7278;">/</span><span style="color: #B8412A;">90</span></div>
+        <div style="font-size: 14px; font-variant-numeric: tabular-nums; color: #6B7278;">128/86 ※</div>
+        <div style="font-size: 14px; font-variant-numeric: tabular-nums;">12 g</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="display: flex;">
+    <div style="width: 104px; flex-shrink: 0; background: #D7E3D2; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 12.5px; color: #4A5450;">降圧薬<br>5mg</div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column;">
+
+      <div style="display: grid; grid-template-columns: 84px 1fr 56px 86px 92px 76px; gap: 0 10px; align-items: center; padding: 0 0 0 10px; height: 72px; border-bottom: 1px solid #DDE3DA;">
+        <div><span style="font-size: 15px;">8/24</span><span style="font-size: 12px; color: #6B7278;">（月）</span></div>
+        <div style="position: relative;">
+          <div style="height: 22px; background: #EBF1E9; border-radius: 4px; overflow: hidden;"><div style="height: 22px; width: 60%; background: #2F6F4E;"></div></div>
+          <div style="position: absolute; top: -3px; bottom: -3px; left: 66.7%; width: 2px; background: #22262A; opacity: .55;"></div>
+        </div>
+        <div style="text-align: right; font-size: 19px; font-weight: 600; font-variant-numeric: tabular-nums; color: #2F6F4E;">5.4</div>
+        <div style="font-size: 16px; font-variant-numeric: tabular-nums;"><span style="color: #2F6F4E;">130</span><span style="color: #6B7278;">/</span><span style="color: #B8412A;">88</span></div>
+        <div style="font-size: 14px; font-variant-numeric: tabular-nums; color: #6B7278;">118/82</div>
+        <div style="font-size: 14px; font-variant-numeric: tabular-nums;">休肝日</div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 84px 1fr 56px 86px 92px 76px; gap: 0 10px; align-items: center; padding: 0 0 0 10px; height: 72px; border-bottom: 1px solid #DDE3DA;">
+        <div><span style="font-size: 15px;">8/25</span><span style="font-size: 12px; color: #6B7278;">（火）</span></div>
+        <div style="position: relative;">
+          <div style="height: 22px; background: #EBF1E9; border-radius: 4px; overflow: hidden;"><div style="height: 22px; width: 51.1%; background: #2F6F4E;"></div></div>
+          <div style="position: absolute; top: -3px; bottom: -3px; left: 66.7%; width: 2px; background: #22262A; opacity: .55;"></div>
+        </div>
+        <div style="text-align: right; font-size: 19px; font-weight: 600; font-variant-numeric: tabular-nums; color: #2F6F4E;">4.6</div>
+        <div style="font-size: 16px; font-variant-numeric: tabular-nums;"><span style="color: #2F6F4E;">127</span><span style="color: #6B7278;">/</span><span style="color: #B8412A;">85</span></div>
+        <div style="font-size: 14px; font-variant-numeric: tabular-nums; color: #6B7278;">115/84</div>
+        <div style="font-size: 14px; font-variant-numeric: tabular-nums;">休肝日</div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 84px 1fr 56px 86px 92px 76px; gap: 0 10px; align-items: center; padding: 0 0 0 10px; height: 72px; border-bottom: 1px solid #DDE3DA;">
+        <div><span style="font-size: 15px;">8/26</span><span style="font-size: 12px; color: #6B7278;">（水）</span></div>
+        <div style="position: relative;">
+          <div style="height: 22px; background: #EBF1E9; border-radius: 4px; overflow: hidden;"><div style="height: 22px; width: 64.4%; background: #2F6F4E;"></div></div>
+          <div style="position: absolute; top: -3px; bottom: -3px; left: 66.7%; width: 2px; background: #22262A; opacity: .55;"></div>
+        </div>
+        <div style="text-align: right; font-size: 19px; font-weight: 600; font-variant-numeric: tabular-nums; color: #2F6F4E;">5.8</div>
+        <div style="font-size: 16px; font-variant-numeric: tabular-nums;"><span style="color: #2F6F4E;">124</span><span style="color: #6B7278;">/</span><span style="color: #2C6FA8;">83</span></div>
+        <div style="font-size: 14px; font-variant-numeric: tabular-nums; color: #6B7278;">107/77</div>
+        <div style="font-size: 14px; font-variant-numeric: tabular-nums;">休肝日</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 20px; font-size: 12px; color: #6B7278; padding-top: 12px;">
+    <div><span style="display: inline-block; width: 11px; height: 11px; border-radius: 2px; background: #2F6F4E; vertical-align: -1px; margin-right: 5px;"></span>目標の 6g 以内</div>
+    <div><span style="display: inline-block; width: 11px; height: 11px; border-radius: 2px; background: #B8412A; vertical-align: -1px; margin-right: 5px;"></span>6g を超えた日</div>
+    <div>縦線が 6g の位置です。</div>
+    <div>※ は飲酒後の測定です。</div>
+  </div>
+
+  <div style="font-size: 12px; color: #6B7278; border-top: 1px solid #DDE3DA; margin-top: auto; padding-top: 10px;">
+    この記録は本人が付けたものです。推定値は目安であり、実測ではありません。判断は主治医にお任せします。
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>
