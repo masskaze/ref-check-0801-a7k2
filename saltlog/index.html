@@ -177,7 +177,7 @@ const STORE_KEY = "saltlog.v1";
 
 const DEFAULT_SETTINGS = {
   apiKey: "",
-  model: "claude-sonnet-4-6",
+  model: "claude-sonnet-5",
   saltGoal: 6,
   bpGoalSys: 135,
   bpGoalDia: 85,
@@ -193,6 +193,11 @@ function load() {
       const parsed = JSON.parse(raw);
       DB.days = parsed.days || {};
       DB.settings = Object.assign({}, DEFAULT_SETTINGS, parsed.settings || {});
+      // 既定を claude-sonnet-5 に変えた分を、保存済みの設定にも1度だけ反映する。
+      if (!DB.settings.modelBumped) {
+        if (DB.settings.model === "claude-sonnet-4-6") DB.settings.model = "claude-sonnet-5";
+        DB.settings.modelBumped = true;
+      }
     }
   } catch (e) {
     console.warn("読み込みに失敗しました", e);
@@ -1305,9 +1310,9 @@ function renderSettings() {
       <div class="field">
         <label for="modelIn">モデル</label>
         <select id="modelIn">
-          <option value="claude-sonnet-4-6" ${s.model === "claude-sonnet-4-6" ? "selected" : ""}>claude-sonnet-4-6（仕様書の指定）</option>
-          <option value="claude-sonnet-5" ${s.model === "claude-sonnet-5" ? "selected" : ""}>claude-sonnet-5（新しく、安い）</option>
-          <option value="claude-opus-5" ${s.model === "claude-opus-5" ? "selected" : ""}>claude-opus-5（最も高性能）</option>
+          <option value="claude-sonnet-5" ${s.model === "claude-sonnet-5" ? "selected" : ""}>claude-sonnet-5（既定）</option>
+          <option value="claude-opus-5" ${s.model === "claude-opus-5" ? "selected" : ""}>claude-opus-5（最も高性能。料金は高い）</option>
+          <option value="claude-sonnet-4-6" ${s.model === "claude-sonnet-4-6" ? "selected" : ""}>claude-sonnet-4-6（仕様書の当初指定）</option>
         </select>
       </div>
     </div>
