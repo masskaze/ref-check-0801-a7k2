@@ -1,0 +1,195 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; font-family: "Hiragino Kaku Gothic ProN","Yu Gothic Medium","Yu Gothic",Meiryo,system-ui,sans-serif; font-size: 15px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+    a { color: #3F6B52; } a:hover { color: #2F6F4E; }
+    table.rep { width: 100%; border-collapse: collapse; font-size: 13px; }
+    table.rep th, table.rep td { border-bottom: 1px solid #DDE3DA; padding: 4px 6px; text-align: left; }
+    table.rep th { color: #6B7278; font-weight: 500; }
+    td.n { font-variant-numeric: tabular-nums; }
+  </style>
+</helmet>
+
+<div style="width: 794px; height: 1123px; background: #FFFFFF; color: #22262A; padding: 48px 44px 44px; display: flex; flex-direction: column; overflow: hidden;">
+
+  <div style="display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid #22262A; padding-bottom: 8px;">
+    <div style="font-size: 20px; font-weight: 600; letter-spacing: .03em;">食事と血圧の記録</div>
+    <div style="margin-left: auto; font-size: 13px; color: #6B7278;">8/20（木）〜 8/26（水）　全7日</div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-top: 16px;">
+    <div style="border: 1px solid #DDE3DA; border-radius: 8px; padding: 8px 11px;">
+      <div style="font-size: 11.5px; color: #6B7278;">平均塩分</div>
+      <div style="font-size: 21px; font-weight: 600; color: #2F6F4E; font-variant-numeric: tabular-nums;">5.9<span style="font-size: 12px;"> g</span></div>
+    </div>
+    <div style="border: 1px solid #DDE3DA; border-radius: 8px; padding: 8px 11px;">
+      <div style="font-size: 11.5px; color: #6B7278;">目標 6g 以内</div>
+      <div style="font-size: 21px; font-weight: 600; font-variant-numeric: tabular-nums;">4<span style="font-size: 12px;"> / 7 日</span></div>
+    </div>
+    <div style="border: 1px solid #DDE3DA; border-radius: 8px; padding: 8px 11px;">
+      <div style="font-size: 11.5px; color: #6B7278;">朝の収縮期 平均</div>
+      <div style="font-size: 21px; font-weight: 600; color: #2F6F4E; font-variant-numeric: tabular-nums;">133</div>
+    </div>
+    <div style="border: 1px solid #DDE3DA; border-radius: 8px; padding: 8px 11px;">
+      <div style="font-size: 11.5px; color: #6B7278;">休肝日</div>
+      <div style="font-size: 21px; font-weight: 600; font-variant-numeric: tabular-nums;">4<span style="font-size: 12px;"> 日</span></div>
+    </div>
+    <div style="border: 1px solid #DDE3DA; border-radius: 8px; padding: 8px 11px;">
+      <div style="font-size: 11.5px; color: #6B7278;">平均カリウム</div>
+      <div style="font-size: 21px; font-weight: 600; font-variant-numeric: tabular-nums;">1120<span style="font-size: 12px;"> mg</span></div>
+    </div>
+  </div>
+
+  <svg viewBox="0 0 706 250" width="706" height="250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="7日間の食塩相当量" style="display: block; margin-top: 18px;">
+    <text x="44" y="16" font-size="12" fill="#22262A" font-weight="600">食塩相当量（g）</text>
+    <text x="38" y="38" font-size="10" fill="#6B7278" text-anchor="end">薬</text>
+    <rect x="44" y="26" width="342.9" height="16" fill="#E7EEE4" stroke="#FFFFFF" stroke-width="1"></rect>
+    <text x="215.4" y="37.5" font-size="10" fill="#4A5450" text-anchor="middle">降圧薬 10mg</text>
+    <rect x="386.9" y="26" width="257.1" height="16" fill="#D7E3D2" stroke="#FFFFFF" stroke-width="1"></rect>
+    <text x="515.4" y="37.5" font-size="10" fill="#4A5450" text-anchor="middle">降圧薬 5mg</text>
+    <line x1="386.9" y1="26" x2="386.9" y2="206" stroke="#8FA69A" stroke-width="1" stroke-dasharray="3 3"></line>
+
+    <line x1="44" y1="206" x2="644" y2="206" stroke="#EDF1EA" stroke-width="1"></line>
+    <line x1="44" y1="174" x2="644" y2="174" stroke="#EDF1EA" stroke-width="1"></line>
+    <line x1="44" y1="142" x2="644" y2="142" stroke="#EDF1EA" stroke-width="1"></line>
+    <line x1="44" y1="110" x2="644" y2="110" stroke="#EDF1EA" stroke-width="1"></line>
+    <line x1="44" y1="78" x2="644" y2="78" stroke="#EDF1EA" stroke-width="1"></line>
+    <text x="36" y="210" font-size="11" fill="#6B7278" text-anchor="end">0</text>
+    <text x="36" y="178" font-size="11" fill="#6B7278" text-anchor="end">2</text>
+    <text x="36" y="146" font-size="11" fill="#6B7278" text-anchor="end">4</text>
+    <text x="36" y="114" font-size="11" fill="#6B7278" text-anchor="end">6</text>
+    <text x="36" y="82" font-size="11" fill="#6B7278" text-anchor="end">8</text>
+
+    <rect x="44" y="110" width="600" height="96" fill="#EBF1E9"></rect>
+
+    <rect x="62.9" y="81.2" width="48" height="124.8" rx="3" fill="#B8412A"></rect>
+    <text x="86.9" y="75" font-size="11" fill="#B8412A" text-anchor="middle" font-weight="600">7.8</text>
+    <rect x="148.6" y="138.8" width="48" height="67.2" rx="3" fill="#2F6F4E"></rect>
+    <text x="172.6" y="132.6" font-size="11" fill="#2F6F4E" text-anchor="middle" font-weight="600">4.2</text>
+    <rect x="234.3" y="108.4" width="48" height="97.6" rx="3" fill="#B8412A"></rect>
+    <text x="258.3" y="102.2" font-size="11" fill="#B8412A" text-anchor="middle" font-weight="600">6.1</text>
+    <rect x="320" y="90.8" width="48" height="115.2" rx="3" fill="#B8412A"></rect>
+    <text x="344" y="84.6" font-size="11" fill="#B8412A" text-anchor="middle" font-weight="600">7.2</text>
+    <rect x="405.7" y="119.6" width="48" height="86.4" rx="3" fill="#2F6F4E"></rect>
+    <text x="429.7" y="113.4" font-size="11" fill="#2F6F4E" text-anchor="middle" font-weight="600">5.4</text>
+    <rect x="491.4" y="132.4" width="48" height="73.6" rx="3" fill="#2F6F4E"></rect>
+    <text x="515.4" y="126.2" font-size="11" fill="#2F6F4E" text-anchor="middle" font-weight="600">4.6</text>
+    <rect x="577.1" y="113.2" width="48" height="92.8" rx="3" fill="#2F6F4E"></rect>
+    <text x="601.1" y="107" font-size="11" fill="#2F6F4E" text-anchor="middle" font-weight="600">5.8</text>
+
+    <line x1="44" y1="110" x2="644" y2="110" stroke="#22262A" stroke-width="1.5"></line>
+    <text x="650" y="114" font-size="10.5" fill="#22262A">目標 6g</text>
+
+    <text x="86.9" y="228" font-size="11" fill="#22262A" text-anchor="middle">8/20</text>
+    <text x="86.9" y="242" font-size="10" fill="#6B7278" text-anchor="middle">木</text>
+    <text x="172.6" y="228" font-size="11" fill="#22262A" text-anchor="middle">8/21</text>
+    <text x="172.6" y="242" font-size="10" fill="#6B7278" text-anchor="middle">金</text>
+    <text x="258.3" y="228" font-size="11" fill="#22262A" text-anchor="middle">8/22</text>
+    <text x="258.3" y="242" font-size="10" fill="#6B7278" text-anchor="middle">土</text>
+    <text x="344" y="228" font-size="11" fill="#22262A" text-anchor="middle">8/23</text>
+    <text x="344" y="242" font-size="10" fill="#6B7278" text-anchor="middle">日</text>
+    <text x="429.7" y="228" font-size="11" fill="#22262A" text-anchor="middle">8/24</text>
+    <text x="429.7" y="242" font-size="10" fill="#6B7278" text-anchor="middle">月</text>
+    <text x="515.4" y="228" font-size="11" fill="#22262A" text-anchor="middle">8/25</text>
+    <text x="515.4" y="242" font-size="10" fill="#6B7278" text-anchor="middle">火</text>
+    <text x="601.1" y="228" font-size="11" fill="#22262A" text-anchor="middle">8/26</text>
+    <text x="601.1" y="242" font-size="10" fill="#6B7278" text-anchor="middle">水</text>
+  </svg>
+  <div style="font-size: 12px; color: #6B7278; margin-top: 2px;">棒は1日の食塩相当量です。横線が目標の 6g です。超えた日は朱色にしています。</div>
+
+  <svg viewBox="0 0 706 250" width="706" height="250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="7日間の朝の血圧" style="display: block; margin-top: 14px;">
+    <text x="44" y="14" font-size="12" fill="#22262A" font-weight="600">朝の血圧（起床後・服薬前）</text>
+    <rect x="44" y="59.8" width="600" height="146.2" fill="#EBF1E9"></rect>
+
+    <line x1="44" y1="183.5" x2="644" y2="183.5" stroke="#EDF1EA" stroke-width="1"></line>
+    <line x1="44" y1="138.5" x2="644" y2="138.5" stroke="#EDF1EA" stroke-width="1"></line>
+    <line x1="44" y1="93.5" x2="644" y2="93.5" stroke="#EDF1EA" stroke-width="1"></line>
+    <line x1="44" y1="48.5" x2="644" y2="48.5" stroke="#EDF1EA" stroke-width="1"></line>
+    <text x="36" y="187.5" font-size="11" fill="#6B7278" text-anchor="end">80</text>
+    <text x="36" y="142.5" font-size="11" fill="#6B7278" text-anchor="end">100</text>
+    <text x="36" y="97.5" font-size="11" fill="#6B7278" text-anchor="end">120</text>
+    <text x="36" y="52.5" font-size="11" fill="#6B7278" text-anchor="end">140</text>
+
+    <line x1="44" y1="59.8" x2="644" y2="59.8" stroke="#22262A" stroke-width="1.2" stroke-dasharray="5 4"></line>
+    <text x="650" y="63.8" font-size="10.5" fill="#22262A">目安 135</text>
+    <line x1="44" y1="172.3" x2="644" y2="172.3" stroke="#2C6FA8" stroke-width="1.2" stroke-dasharray="5 4"></line>
+    <text x="650" y="176.3" font-size="10.5" fill="#2C6FA8">目安 85</text>
+
+    <path d="M86.9 44 L172.6 48.5 L258.3 57.5 L344 64.3 L429.7 71 L515.4 77.8 L601.1 84.5" fill="none" stroke="#6B7278" stroke-width="2" stroke-linejoin="round"></path>
+    <path d="M86.9 143 L172.6 147.5 L258.3 154.3 L344 161 L429.7 165.5 L515.4 172.3 L601.1 176.8" fill="none" stroke="#8FA9C4" stroke-width="2" stroke-linejoin="round"></path>
+
+    <circle cx="86.9" cy="44" r="4" fill="#B8412A"></circle>
+    <text x="86.9" y="35" font-size="10.5" fill="#B8412A" text-anchor="middle" font-weight="600">142</text>
+    <circle cx="172.6" cy="48.5" r="4" fill="#B8412A"></circle>
+    <text x="172.6" y="39.5" font-size="10.5" fill="#B8412A" text-anchor="middle" font-weight="600">140</text>
+    <circle cx="258.3" cy="57.5" r="4" fill="#B8412A"></circle>
+    <text x="258.3" y="48.5" font-size="10.5" fill="#B8412A" text-anchor="middle" font-weight="600">136</text>
+    <circle cx="344" cy="64.3" r="4" fill="#2F6F4E"></circle>
+    <text x="344" y="55.3" font-size="10.5" fill="#2F6F4E" text-anchor="middle" font-weight="600">133</text>
+    <circle cx="429.7" cy="71" r="4" fill="#2F6F4E"></circle>
+    <text x="429.7" y="62" font-size="10.5" fill="#2F6F4E" text-anchor="middle" font-weight="600">130</text>
+    <circle cx="515.4" cy="77.8" r="4" fill="#2F6F4E"></circle>
+    <text x="515.4" y="68.8" font-size="10.5" fill="#2F6F4E" text-anchor="middle" font-weight="600">127</text>
+    <circle cx="601.1" cy="84.5" r="4" fill="#2F6F4E"></circle>
+    <text x="601.1" y="75.5" font-size="10.5" fill="#2F6F4E" text-anchor="middle" font-weight="600">124</text>
+
+    <circle cx="86.9" cy="143" r="4" fill="#B8412A"></circle>
+    <text x="86.9" y="159" font-size="10.5" fill="#B8412A" text-anchor="middle" font-weight="600">98</text>
+    <circle cx="172.6" cy="147.5" r="4" fill="#B8412A"></circle>
+    <text x="172.6" y="163.5" font-size="10.5" fill="#B8412A" text-anchor="middle" font-weight="600">96</text>
+    <circle cx="258.3" cy="154.3" r="4" fill="#B8412A"></circle>
+    <text x="258.3" y="170.3" font-size="10.5" fill="#B8412A" text-anchor="middle" font-weight="600">93</text>
+    <circle cx="344" cy="161" r="4" fill="#B8412A"></circle>
+    <text x="344" y="177" font-size="10.5" fill="#B8412A" text-anchor="middle" font-weight="600">90</text>
+    <circle cx="429.7" cy="165.5" r="4" fill="#B8412A"></circle>
+    <text x="429.7" y="181.5" font-size="10.5" fill="#B8412A" text-anchor="middle" font-weight="600">88</text>
+    <circle cx="515.4" cy="172.3" r="4" fill="#B8412A"></circle>
+    <text x="515.4" y="188.3" font-size="10.5" fill="#B8412A" text-anchor="middle" font-weight="600">85</text>
+    <circle cx="601.1" cy="176.8" r="4" fill="#2C6FA8"></circle>
+    <text x="601.1" y="192.8" font-size="10.5" fill="#2C6FA8" text-anchor="middle" font-weight="600">83</text>
+
+    <text x="86.9" y="228" font-size="11" fill="#22262A" text-anchor="middle">8/20</text>
+    <text x="172.6" y="228" font-size="11" fill="#22262A" text-anchor="middle">8/21</text>
+    <text x="258.3" y="228" font-size="11" fill="#22262A" text-anchor="middle">8/22</text>
+    <text x="344" y="228" font-size="11" fill="#22262A" text-anchor="middle">8/23</text>
+    <text x="429.7" y="228" font-size="11" fill="#22262A" text-anchor="middle">8/24</text>
+    <text x="515.4" y="228" font-size="11" fill="#22262A" text-anchor="middle">8/25</text>
+    <text x="601.1" y="228" font-size="11" fill="#22262A" text-anchor="middle">8/26</text>
+  </svg>
+  <div style="font-size: 12px; color: #6B7278; margin-top: 2px;">朝・服薬前の血圧です。帯の上に出た点だけを朱色にしています。飲酒後の値は除いています。</div>
+
+  <div style="font-size: 13px; margin-top: 14px;"><span style="color: #6B7278;">服薬メモ　</span>8/20 降圧薬 10mg　／　8/24 降圧薬 5mg</div>
+
+  <table class="rep" style="margin-top: 10px;">
+    <thead>
+      <tr><th>日付</th><th>塩分</th><th>朝の血圧</th><th>夜の血圧</th><th>純アルコール</th><th>メモ</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>8/20（木）</td><td class="n" style="color: #B8412A;">7.8 g</td><td class="n">142/98</td><td class="n">121/87 ※</td><td class="n">24 g</td><td>会食</td></tr>
+      <tr><td>8/21（金）</td><td class="n">4.2 g</td><td class="n">140/96</td><td class="n">132/94</td><td class="n">休肝日</td><td></td></tr>
+      <tr><td>8/22（土）</td><td class="n" style="color: #B8412A;">6.1 g</td><td class="n">136/93</td><td class="n">125/88 ※</td><td class="n">18 g</td><td>外食2回</td></tr>
+      <tr><td>8/23（日）</td><td class="n" style="color: #B8412A;">7.2 g</td><td class="n">133/90</td><td class="n">128/86 ※</td><td class="n">12 g</td><td></td></tr>
+      <tr><td>8/24（月）</td><td class="n">5.4 g</td><td class="n">130/88</td><td class="n">118/82</td><td class="n">休肝日</td><td></td></tr>
+      <tr><td>8/25（火）</td><td class="n">4.6 g</td><td class="n">127/85</td><td class="n">115/84</td><td class="n">休肝日</td><td>自炊</td></tr>
+      <tr><td>8/26（水）</td><td class="n">5.8 g</td><td class="n">124/83</td><td class="n">107/77</td><td class="n">休肝日</td><td></td></tr>
+    </tbody>
+  </table>
+
+  <div style="font-size: 12px; color: #6B7278; margin-top: 6px;">※ は飲酒後の測定です。</div>
+
+  <div style="font-size: 12px; color: #6B7278; border-top: 1px solid #DDE3DA; margin-top: auto; padding-top: 10px;">
+    この記録は本人が付けたものです。推定値は目安であり、実測ではありません。判断は主治医にお任せします。
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

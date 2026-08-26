@@ -1,0 +1,118 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; font-family: "Hiragino Kaku Gothic ProN","Yu Gothic Medium","Yu Gothic",Meiryo,system-ui,sans-serif; font-size: 15px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+    a { color: #3F6B52; } a:hover { color: #2F6F4E; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #F1F4EE; color: #22262A; padding: 12px 14px 0; display: flex; flex-direction: column; gap: 10px; overflow: hidden;">
+
+  <div style="display: flex; align-items: baseline; gap: 10px;">
+    <div style="font-size: 16px; font-weight: 600; letter-spacing: .02em;">食事・血圧の記録</div>
+    <div style="margin-left: auto; font-size: 13px; color: #6B7278;">8/26（水）</div>
+  </div>
+
+  <div style="background: #FFFFFF; border: 1px solid #DDE3DA; border-radius: 10px; padding: 12px 14px;">
+    <div style="font-size: 15px; font-weight: 600;">今日の塩分</div>
+    <div style="font-size: 12.5px; color: #6B7278; margin-top: 2px;">目標は1日 6g 以内です。</div>
+
+    <div style="display: flex; align-items: baseline; gap: 8px; margin-top: 10px;">
+      <span style="font-size: 34px; font-weight: 600; line-height: 1.1; color: #2F6F4E; font-variant-numeric: tabular-nums;">5.8</span>
+      <span style="font-size: 15px; color: #6B7278;">g</span>
+      <span style="margin-left: auto; font-size: 13px; color: #6B7278;">目標まで あと 0.2g</span>
+    </div>
+
+    <div style="position: relative; margin: 10px 0 6px;">
+      <div style="height: 12px; background: #E6EDE3; border-radius: 6px; overflow: hidden;">
+        <div style="height: 12px; width: 60.4%; background: #2F6F4E; border-radius: 6px;"></div>
+      </div>
+      <div style="position: absolute; top: -3px; bottom: -3px; left: 62.5%; width: 2px; background: #22262A; opacity: .55;"></div>
+    </div>
+
+    <div style="display: flex; gap: 16px; margin-top: 10px; padding-top: 9px; border-top: 1px solid #DDE3DA;">
+      <div style="display: flex; align-items: baseline; gap: 5px;">
+        <span style="font-size: 11.5px; color: #6B7278;">kcal</span>
+        <span style="font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums;">1040</span>
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 5px;">
+        <span style="font-size: 11.5px; color: #6B7278;">カリウム</span>
+        <span style="font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums;">1180</span>
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 5px;">
+        <span style="font-size: 11.5px; color: #6B7278;">アルコール</span>
+        <span style="font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums;">0</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="background: #FFFFFF; border: 1px solid #DDE3DA; border-radius: 10px; padding: 12px 14px;">
+    <div style="display: flex; align-items: baseline; gap: 8px;">
+      <div style="font-size: 15px; font-weight: 600;">早見表</div>
+      <div style="font-size: 12.5px; color: #6B7278;">押すと記録に入ります</div>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;">
+      <div style="border: 1px solid #DDE3DA; border-radius: 20px; padding: 6px 11px; font-size: 13px; background: #FFFFFF;">味噌汁 <b style="font-variant-numeric: tabular-nums;">1.4</b></div>
+      <div style="border: 1px solid #DDE3DA; border-radius: 20px; padding: 6px 11px; font-size: 13px; background: #FFFFFF;">餃子6個 <b style="font-variant-numeric: tabular-nums;">1.2</b></div>
+      <div style="border: 1px solid #DDE3DA; border-radius: 20px; padding: 6px 11px; font-size: 13px; background: #FFFFFF;">納豆 <b style="font-variant-numeric: tabular-nums;">0.4</b></div>
+      <div style="border: 1px solid #DDE3DA; border-radius: 20px; padding: 6px 11px; font-size: 13px; background: #FFFFFF;">定食 <b style="font-variant-numeric: tabular-nums;">4.2</b></div>
+    </div>
+  </div>
+
+  <div style="background: #FFFFFF; border: 1px solid #DDE3DA; border-radius: 10px; padding: 12px 14px;">
+    <div style="font-size: 15px; font-weight: 600;">この日の食事</div>
+
+    <div style="display: flex; flex-direction: column; gap: 0; margin-top: 6px;">
+      <div style="padding: 7px 0;">
+        <div style="display: flex; align-items: baseline; gap: 8px;">
+          <span style="font-size: 11.5px; color: #6B7278; border: 1px solid #DDE3DA; border-radius: 20px; padding: 1px 8px;">朝</span>
+          <span style="font-weight: 600;">冷奴・納豆・トマトジュース</span>
+          <span style="margin-left: auto; font-weight: 600; font-variant-numeric: tabular-nums;">0.6 g</span>
+        </div>
+      </div>
+      <div style="padding: 7px 0; border-top: 1px solid #DDE3DA;">
+        <div style="display: flex; align-items: baseline; gap: 8px;">
+          <span style="font-size: 11.5px; color: #6B7278; border: 1px solid #DDE3DA; border-radius: 20px; padding: 1px 8px;">昼</span>
+          <span style="font-weight: 600;">担々麺と半チャーハン</span>
+          <span style="margin-left: auto; font-weight: 600; font-variant-numeric: tabular-nums;">3.8 g</span>
+        </div>
+        <div style="font-size: 12.5px; color: #6B7278; margin-top: 1px;">スープを残した ／ 半サイズ</div>
+      </div>
+      <div style="padding: 7px 0; border-top: 1px solid #DDE3DA;">
+        <div style="display: flex; align-items: baseline; gap: 8px;">
+          <span style="font-size: 11.5px; color: #6B7278; border: 1px solid #DDE3DA; border-radius: 20px; padding: 1px 8px;">夜</span>
+          <span style="font-weight: 600;">無塩そば・めかぶ・卵</span>
+          <span style="margin-left: auto; font-weight: 600; font-variant-numeric: tabular-nums;">1.4 g</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background: #FFFFFF; border: 1px solid #DDE3DA; border-radius: 10px; padding: 12px 14px;">
+    <div style="font-size: 15px; font-weight: 600;">血圧</div>
+    <div style="display: flex; align-items: baseline; gap: 10px; margin-top: 6px;">
+      <span style="font-size: 11.5px; color: #6B7278; border: 1px solid #DDE3DA; border-radius: 20px; padding: 1px 8px;">朝</span>
+      <span style="font-size: 20px; font-weight: 600; color: #2F6F4E; font-variant-numeric: tabular-nums;">124</span>
+      <span style="font-size: 15px; color: #6B7278;">/</span>
+      <span style="font-size: 20px; font-weight: 600; color: #2C6FA8; font-variant-numeric: tabular-nums;">83</span>
+      <span style="margin-left: auto; font-size: 12.5px; color: #6B7278;">06:48</span>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 8px; padding: 4px 0 14px; margin-top: auto;">
+    <div style="flex-grow: 1; background: #3F6B52; color: #FFFFFF; border-radius: 8px; padding: 13px 14px; font-size: 15px; text-align: center;">食事を記録する</div>
+    <div style="border: 1px solid #DDE3DA; background: #FFFFFF; border-radius: 8px; padding: 13px 16px; font-size: 15px;">血圧</div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>
