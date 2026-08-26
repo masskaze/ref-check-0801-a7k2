@@ -184,7 +184,7 @@ const DEFAULT_SETTINGS = {
   savePhoto: true
 };
 
-let DB = { days: {}, settings: Object.assign({}, DEFAULT_SETTINGS) };
+let DB = { days: {}, learned: {}, settings: Object.assign({}, DEFAULT_SETTINGS) };
 
 function load() {
   try {
@@ -192,6 +192,7 @@ function load() {
     if (raw) {
       const parsed = JSON.parse(raw);
       DB.days = parsed.days || {};
+      DB.learned = parsed.learned || {};
       DB.settings = Object.assign({}, DEFAULT_SETTINGS, parsed.settings || {});
       // 既定を claude-sonnet-5 に変えた分を、保存済みの設定にも1度だけ反映する。
       if (!DB.settings.modelBumped) {
@@ -358,6 +359,7 @@ let state = {
   tab: "day",
   slot: "昼",
   mealText: "",
+  local: null,
   mods: {},
   photoFull: null,   // 送信用（長辺1024px）
   photoThumb: null,  // 保存用（長辺320px）
@@ -409,7 +411,7 @@ function renderDay() {
   html.push(`
   <div class="panel">
     <h2>食事を記録する</h2>
-    <p class="hint">写真かテキストのどちらかがあれば推定できます。両方あると精度が上がります。</p>
+    <p class="hint">食べたものを書くと、その場で塩分が出ます。通信しません。写真のときだけ AI を使います。</p>
 
     <div class="chips" id="slotChips">
       ${SLOTS.map(s => `<button class="chip" data-slot="${s}" aria-pressed="${state.slot === s}">${s}</button>`).join("")}
@@ -436,12 +438,15 @@ function renderDay() {
       ${MODIFIERS.map(m => `<button class="chip" data-mod="${m.id}" aria-pressed="${!!state.mods[m.id]}">${m.label}</button>`).join("")}
     </div>
 
+    <div id="localBox">${renderLocal(state.local)}</div>
+
     <div class="row" style="margin-top:14px">
-      <button class="btn primary" id="estimateBtn" ${state.busy ? "disabled" : ""}>
+      <button class="btn primary" id="recordBtn">記録する</button>
+      <button class="btn" id="estimateBtn" ${state.busy ? "disabled" : ""}>
         ${state.busy ? '<span class="spin"></span>推定中' : "AI で推定する"}
       </button>
-      <button class="btn" id="manualBtn">手入力で追加</button>
     </div>
+    <p class="hint" style="margin:8px 0 0">辞書で足りないときや、写真から出すときに AI を使います。</p>
 
     <div id="estimateBox">${state.estimate ? renderEstimate(state.estimate) : ""}</div>
   </div>`);
@@ -513,6 +518,7 @@ function renderMealList(meals) {
     const tags = [];
     if (m.source === "measured") tags.push(`<span class="tag meas">実測値</span>`);
     else if (m.edited) tags.push(`<span class="tag fix">手で修正</span>`);
+    else if (m.source === "dict") tags.push(`<span class="tag">辞書から</span>`);
     if (m.modifiers && m.modifiers.length) {
       m.modifiers.forEach(id => {
         const mo = MODIFIERS.find(x => x.id === id);
@@ -542,17 +548,35 @@ function renderMealList(meals) {
 }
 
 function renderMealEditor(m) {
+  const items = m.items || [];
+  const perItem = items.length ? `
+    <div style="margin-top:10px">
+      <div style="font-size:12.5px;color:var(--sub)">品目ごとの塩分（g）</div>
+      ${items.map((it, i) => `
+        <div class="row" style="margin-top:6px;align-items:center">
+          <span style="flex:1;min-width:0">${esc(it.name)}</span>
+          <input type="number" class="ed-item" data-i="${i}" step="0.1" value="${r1(num(it.salt))}">
+        </div>`).join("")}
+      <label style="display:block;margin-top:8px;font-size:13px;color:var(--sub)">
+        <input type="checkbox" id="ed-learn" checked> 直した値を、この品目の値として覚える
+      </label>
+    </div>` : "";
+
   return `
   <div class="item" data-id="${m.id}">
     <div class="field"><label>品目</label><input type="text" id="ed-label" value="${esc(m.label)}"></div>
+    ${perItem}
     <div class="row" style="margin-top:8px">
-      <div class="field"><label>塩分 g</label><input type="number" id="ed-salt" step="0.1" value="${num(m.salt)}"></div>
+      <div class="field"><label>塩分 合計 g</label><input type="number" id="ed-salt" step="0.1" value="${num(m.salt)}"></div>
       <div class="field"><label>kcal</label><input type="number" id="ed-kcal" step="10" value="${num(m.kcal)}"></div>
       <div class="field"><label>カリウム mg</label><input type="number" id="ed-k" step="10" value="${num(m.potassium)}"></div>
       <div class="field"><label>区分</label>
         <select id="ed-slot">${SLOTS.map(s => `<option ${s === m.slot ? "selected" : ""}>${s}</option>`).join("")}</select></div>
     </div>
     <div class="field" style="margin-top:8px"><label>メモ</label><input type="text" id="ed-note" value="${esc(m.note || "")}"></div>
+    ${items.length ? "" : `<label style="display:block;margin-top:8px;font-size:13px;color:var(--sub)">
+      <input type="checkbox" id="ed-learn2"> この値を「${esc(m.label)}」として覚える
+    </label>`}
     <div class="row" style="margin-top:8px">
       <label style="font-size:13px;color:var(--sub)">
         <input type="checkbox" id="ed-meas" ${m.source === "measured" ? "checked" : ""}> 店の表示値（実測）
@@ -583,6 +607,36 @@ function renderBpList(list) {
   }).join("");
 }
 
+function renderLocal(loc) {
+  if (!loc) return "";
+  if (!loc.rows.length && !loc.unknown.length) return "";
+
+  const rows = loc.rows.map(r => `
+    <div class="item" style="padding:7px 0">
+      <div class="top">
+        <span class="name">${esc(r.name)}</span>
+        <span class="salt">${r.salt.toFixed(1)} g</span>
+      </div>
+      <div class="meta">${r.learned ? '<span class="tag fix">あなたの値</span>' : (r.src === "仕様書" ? '<span class="tag">実測の目安</span>' : '<span class="tag">一般の目安</span>')}${r.note ? "　" + esc(r.note) : ""}</div>
+    </div>`).join("");
+
+  const unknown = loc.unknown.length
+    ? `<div class="meta note-ask" style="margin-top:6px">「${loc.unknown.map(esc).join("」「")}」は辞書にありません。記録してから直すか、AI で推定してください。</div>`
+    : "";
+
+  return `
+  <div class="result" style="margin-top:12px">
+    <div style="display:flex;align-items:baseline;gap:8px">
+      <span style="font-size:13px;font-weight:600">暫定の推定</span>
+      <span style="margin-left:auto;font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;color:${loc.total.salt > num(DB.settings.saltGoal, 6) ? "var(--over)" : "var(--good)"}">${loc.total.salt.toFixed(1)}</span>
+      <span style="font-size:14px;color:var(--sub)">g</span>
+    </div>
+    ${rows}
+    ${loc.total.alcohol > 0 ? `<div class="meta" style="margin-top:4px">純アルコール ${loc.total.alcohol} g を加えます。</div>` : ""}
+    ${unknown}
+  </div>`;
+}
+
 function renderEstimate(e) {
   const items = (e.items || []).map(i =>
     `<li>${esc(i.name)}　<b>${r1(num(i.salt)).toFixed(1)} g</b>${i.note ? "　<span style='color:var(--sub)'>" + esc(i.note) + "</span>" : ""}</li>`
@@ -611,7 +665,10 @@ function renderEstimate(e) {
 
 /* --- 今日の画面のイベント --- */
 function bindDay() {
-  $("#mealText").addEventListener("input", ev => { state.mealText = ev.target.value; });
+  $("#mealText").addEventListener("input", ev => {
+    state.mealText = ev.target.value;
+    refreshLocal();
+  });
 
   $("#slotChips").addEventListener("click", ev => {
     const b = ev.target.closest("[data-slot]"); if (!b) return;
@@ -625,6 +682,7 @@ function bindDay() {
     const id = b.dataset.mod;
     state.mods[id] = !state.mods[id];
     b.setAttribute("aria-pressed", String(!!state.mods[id]));
+    refreshLocal();
   });
 
   $("#photoInput").addEventListener("change", async ev => {
@@ -643,7 +701,7 @@ function bindDay() {
   });
 
   $("#estimateBtn").addEventListener("click", runEstimate);
-  $("#manualBtn").addEventListener("click", addManualMeal);
+  $("#recordBtn").addEventListener("click", recordLocal);
 
   if ($("#acceptEst")) $("#acceptEst").addEventListener("click", acceptEstimate);
   if ($("#discardEst")) $("#discardEst").addEventListener("click", () => { state.estimate = null; renderDay(); });
@@ -681,33 +739,85 @@ function onMealListClick(ev) {
   }
   if (act === "save-edit") {
     const m = d.meals.find(x => x.id === b.dataset.id); if (!m) return;
+
+    // 品目ごとに直された分を先に取り込む
+    let learnedCount = 0;
+    const itemInputs = document.querySelectorAll(".ed-item");
+    if (itemInputs.length && m.items) {
+      const doLearn = $("#ed-learn") && $("#ed-learn").checked;
+      itemInputs.forEach(inp => {
+        const it = m.items[Number(inp.dataset.i)]; if (!it) return;
+        const v = num(inp.value);
+        if (v !== num(it.salt)) {
+          if (doLearn && learnFromItem(it, v)) learnedCount++;
+          it.salt = r1(v);
+        }
+      });
+      m.salt = r1(m.items.reduce((t, x) => t + num(x.salt), 0));
+      m.note = m.items.map(x => x.name + " " + r1(num(x.salt)).toFixed(1) + "g").join("、");
+    }
+
     m.label = $("#ed-label").value.trim() || m.label;
-    m.salt = num($("#ed-salt").value);
+    if (!itemInputs.length) m.salt = num($("#ed-salt").value);
     m.kcal = num($("#ed-kcal").value);
     m.potassium = num($("#ed-k").value);
     m.slot = $("#ed-slot").value;
     m.note = $("#ed-note").value.trim();
-    m.source = $("#ed-meas").checked ? "measured" : (m.source === "ai" ? "ai" : "manual");
+    m.source = $("#ed-meas").checked ? "measured" : (m.source === "ai" ? "ai" : (m.source === "dict" ? "dict" : "manual"));
     m.edited = true;
+
+    // 辞書に無い品目は、名前をそのまま覚える
+    if (!(m.items && m.items.length) && $("#ed-learn2") && $("#ed-learn2").checked) {
+      learnByName(m.label, m.salt, m.kcal, m.potassium);
+      learnedCount++;
+    }
+
     save(); state.editingMeal = null; renderDay();
-    flash("修正を保存しました。", "ok");
+    flash(learnedCount ? "修正を保存し、次から同じ値を使います。" : "修正を保存しました。", "ok");
   }
 }
 
-function addManualMeal() {
+// 打つたびに辞書を引く。画面のその場だけを書き替える。
+function refreshLocal() {
+  const text = (state.mealText || "").trim();
+  state.local = text ? estimateLocal(text, state.mods) : null;
+  const box = $("#localBox");
+  if (box) box.innerHTML = renderLocal(state.local);
+}
+
+// 暫定の推定をそのまま記録する。辞書に無ければ 0 で入れて、あとから直す。
+function recordLocal() {
+  const text = (state.mealText || "").trim();
+  if (!text && !state.photoThumb) { flash("食べたものを書いてください。", "err"); return; }
+
   const d = ensureDay(state.date);
-  const label = (state.mealText || "").trim() || "食事";
+  const loc = state.local;
+  const rows = loc ? loc.rows : [];
+  const total = loc ? loc.total : { salt: 0, kcal: 0, k: 0, alcohol: 0 };
+
   const meal = {
-    id: uid(), label, salt: 0, kcal: 0, potassium: 0, note: "",
-    slot: state.slot, photo: DB.settings.savePhoto ? state.photoThumb : null,
+    id: uid(),
+    label: text || "食事",
+    salt: r1(total.salt),
+    kcal: Math.round(total.kcal),
+    potassium: Math.round(total.k),
+    note: rows.map(r => r.name + " " + r.salt.toFixed(1) + "g").join("、"),
+    items: rows.map(r => ({ key: r.key, name: r.name, salt: r.salt, mult: r.mult, slCut: r.slCut })),
+    slot: state.slot,
+    photo: DB.settings.savePhoto ? state.photoThumb : null,
     modifiers: Object.keys(state.mods).filter(k => state.mods[k]),
-    source: "manual", edited: true
+    source: rows.length ? "dict" : "manual",
+    edited: false
   };
   d.meals.push(meal);
+  if (num(total.alcohol) > 0) { d.alcohol = r1(num(d.alcohol) + num(total.alcohol)); d.noAlcohol = false; }
   save();
-  state.editingMeal = meal.id;
-  state.photoFull = null; state.photoThumb = null; state.mods = {}; state.mealText = "";
+
+  const noHit = !rows.length;
+  state.photoFull = null; state.photoThumb = null; state.mods = {}; state.mealText = ""; state.local = null;
+  state.editingMeal = noHit ? meal.id : null;
   renderDay();
+  flash(noHit ? "辞書に無い品目です。数値を入れてください。" : "記録しました。数値は「修正」から直せます。", noHit ? "err" : "ok");
 }
 
 function acceptEstimate() {
@@ -721,6 +831,7 @@ function acceptEstimate() {
     kcal: Math.round(num(total.kcal)),
     potassium: Math.round(num(total.potassium)),
     note: (e.items || []).map(i => i.name + " " + r1(num(i.salt)) + "g").join("、"),
+    items: (e.items || []).map(i => ({ key: normText(i.name), name: i.name, salt: r1(num(i.salt)), mult: 1, slCut: 0 })),
     slot: state.slot,
     photo: DB.settings.savePhoto ? state.photoThumb : null,
     modifiers: Object.keys(state.mods).filter(k => state.mods[k]),
@@ -733,7 +844,7 @@ function acceptEstimate() {
   }
   save();
   state.estimate = null; state.photoFull = null; state.photoThumb = null;
-  state.mods = {}; state.mealText = "";
+  state.mods = {}; state.mealText = ""; state.local = null;
   renderDay();
   flash("記録しました。数値は「修正」から直せます。", "ok");
 }
@@ -814,6 +925,360 @@ function shrinkImage(file, maxEdge, quality) {
     img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("画像を読めません")); };
     img.src = url;
   });
+}
+
+/* =========================================================
+   5.5 料理の辞書と、文字からの割り出し
+   AI を使いません。すべてこの端末の中で終わります。
+   数値は初期値です。手で直すと、その料理の値として覚えます。
+
+   [名前, 塩分g, kcal, カリウムmg, 汁の塩分g, 単位, 出典, 別名]
+   汁の塩分 … 「汁を残した」で差し引く分
+   単位     … "" は1人前。"個" などは1つあたり
+   出典     … "仕様書" は SPEC.md §4 の実測。"目安" は一般的な推定
+   ========================================================= */
+const DISH_TABLE = [
+  // --- 仕様書 §4 の実測 ---
+  ["ラーメン",        7.0, 500, 400, 2.5, "", "仕様書", "らーめん|中華そば|中華麺"],
+  ["担々麺",          7.0, 700, 420, 2.5, "", "仕様書", "たんたんめん|坦々麺"],
+  ["かけうどん",      5.5, 350, 180, 2.5, "", "仕様書", "素うどん"],
+  ["かけそば",        5.5, 340, 200, 2.5, "", "仕様書", "素そば"],
+  ["ぶっかけうどん",  3.8, 380, 190, 0.8, "", "仕様書", ""],
+  ["チャーハン",      2.5, 650, 260, 0,   "", "仕様書", "炒飯|焼き飯|焼飯"],
+  ["餃子",            0.2, 45,  40,  0,   "個", "仕様書", "ぎょうざ|ギョーザ"],
+  ["味噌汁",          1.4, 40,  180, 1.2, "杯", "仕様書", "みそ汁|みそしる"],
+  ["漬物",            1.0, 20,  100, 0,   "", "仕様書", "つけもの|お新香|たくあん"],
+  ["キムチ",          1.0, 25,  180, 0,   "", "仕様書", ""],
+  ["小鉢",            1.0, 60,  120, 0,   "", "仕様書", ""],
+  ["天ぷら",          0.5, 110, 70,  0,   "個", "仕様書", "てんぷら"],
+  ["納豆",            0.4, 100, 350, 0,   "", "仕様書", "なっとう"],
+  ["いなり寿司",      0.5, 130, 60,  0,   "個", "仕様書", "いなり|稲荷寿司"],
+  ["梅干し",          2.0, 5,   20,  0,   "個", "仕様書", "うめぼし"],
+  ["食パン",          0.8, 160, 60,  0,   "枚", "仕様書", "トースト"],
+  ["シーザーサラダ",  2.7, 250, 300, 0,   "", "仕様書", ""],
+  ["ステーキ",        2.0, 450, 500, 0,   "", "仕様書", ""],
+  ["定食",            4.3, 700, 700, 1.2, "", "仕様書", "ていしょく"],
+
+  // --- 麺（目安）---
+  ["味噌ラーメン",    7.5, 550, 420, 2.7, "", "目安", "みそラーメン"],
+  ["醤油ラーメン",    7.0, 480, 400, 2.5, "", "目安", "しょうゆラーメン"],
+  ["塩ラーメン",      6.8, 460, 390, 2.4, "", "目安", "しおラーメン"],
+  ["とんこつラーメン",7.0, 560, 400, 2.5, "", "目安", "豚骨ラーメン"],
+  ["つけ麺",          6.0, 700, 400, 1.8, "", "目安", "つけめん"],
+  ["冷やし中華",      4.0, 500, 350, 0,   "", "目安", "ひやし中華"],
+  ["焼きそば",        3.0, 550, 300, 0,   "", "目安", "やきそば"],
+  ["ざるそば",        2.5, 300, 180, 0.8, "", "目安", "もりそば|盛りそば"],
+  ["ざるうどん",      2.5, 330, 150, 0.8, "", "目安", "もりうどん"],
+  ["天ぷらそば",      5.8, 480, 260, 2.5, "", "目安", "天ぷらうどん|天そば"],
+  ["きつねうどん",    5.5, 420, 200, 2.5, "", "目安", "きつねそば"],
+  ["肉うどん",        5.8, 480, 300, 2.5, "", "目安", "肉そば"],
+  ["カレーうどん",    6.0, 500, 320, 2.6, "", "目安", "カレーそば"],
+  ["ペペロンチーノ",  3.0, 550, 200, 0,   "", "目安", ""],
+  ["カルボナーラ",    3.2, 750, 250, 0,   "", "目安", ""],
+  ["ミートソース",    3.0, 620, 400, 0,   "", "目安", "ボロネーゼ"],
+  ["ナポリタン",      3.2, 600, 350, 0,   "", "目安", ""],
+  ["パスタ",          3.0, 600, 280, 0,   "", "目安", "スパゲティ|スパゲッティ"],
+  ["カップ麺",        5.5, 400, 200, 2.5, "", "目安", "カップラーメン|カップヌードル"],
+  ["無塩そば",        0.1, 300, 200, 0,   "", "目安", "塩不使用そば|食塩不使用そば"],
+
+  // --- 丼・ご飯もの（目安）---
+  ["ごはん",          0.0, 250, 40,  0,   "杯", "目安", "白ごはん|白飯|ライス|ご飯"],
+  ["牛丼",            2.5, 650, 300, 0,   "", "目安", "ぎゅうどん"],
+  ["親子丼",          2.8, 650, 350, 0,   "", "目安", "おやこどん"],
+  ["カツ丼",          3.5, 850, 400, 0,   "", "目安", "かつ丼"],
+  ["天丼",            3.0, 700, 300, 0,   "", "目安", "てんどん"],
+  ["海鮮丼",          2.5, 550, 450, 0,   "", "目安", "かいせんどん"],
+  ["カレーライス",    3.0, 750, 500, 0,   "", "目安", "カレー"],
+  ["オムライス",      3.0, 700, 400, 0,   "", "目安", ""],
+  ["おにぎり",        1.0, 180, 40,  0,   "個", "目安", "おむすび"],
+  ["弁当",            3.5, 700, 500, 0,   "", "目安", "べんとう|お弁当"],
+  ["寿司",            0.2, 45,  30,  0,   "貫", "目安", "すし|にぎり"],
+
+  // --- 定食・おかず（目安）---
+  ["焼き魚定食",      4.3, 620, 750, 1.2, "", "目安", "さかな定食"],
+  ["鮭定食",          4.2, 600, 700, 1.2, "", "目安", "しゃけ定食"],
+  ["とんかつ定食",    4.5, 950, 750, 1.2, "", "目安", "カツ定食"],
+  ["生姜焼き定食",    4.5, 850, 800, 1.2, "", "目安", "しょうが焼き定食"],
+  ["唐揚げ定食",      4.3, 900, 750, 1.2, "", "目安", "からあげ定食"],
+  ["ハンバーグ",      2.5, 450, 400, 0,   "", "目安", ""],
+  ["とんかつ",        1.5, 450, 350, 0,   "", "目安", "トンカツ|豚カツ"],
+  ["唐揚げ",          0.3, 90,  70,  0,   "個", "目安", "からあげ|から揚げ"],
+  ["焼き鳥",          0.5, 80,  90,  0,   "本", "目安", "やきとり"],
+  ["刺身",            0.8, 130, 350, 0,   "", "目安", "さしみ|お造り"],
+  ["焼き魚",          1.5, 200, 400, 0,   "", "目安", "やきざかな"],
+  ["卵焼き",          0.6, 120, 70,  0,   "", "目安", "だし巻き|玉子焼き"],
+  ["目玉焼き",        0.4, 100, 70,  0,   "", "目安", "めだまやき"],
+  ["ゆで卵",          0.2, 80,  65,  0,   "個", "目安", "ゆでたまご|卵|たまご|玉子"],
+  ["野菜炒め",        1.8, 250, 450, 0,   "", "目安", "やさいいため"],
+  ["きんぴら",        0.8, 90,  200, 0,   "", "目安", "きんぴらごぼう"],
+  ["ひじき煮",        0.9, 80,  300, 0,   "", "目安", "ひじき"],
+  ["春巻き",          0.5, 130, 60,  0,   "本", "目安", "はるまき"],
+  ["シュウマイ",      0.4, 50,  50,  0,   "個", "目安", "しゅうまい|焼売"],
+  ["コロッケ",        0.7, 200, 250, 0,   "個", "目安", ""],
+  ["枝豆",            0.5, 120, 350, 0,   "", "目安", "えだまめ"],
+  ["サラダ",          1.0, 120, 300, 0,   "", "目安", "野菜サラダ|グリーンサラダ"],
+
+  // --- 大豆・海藻・野菜・果物（目安）---
+  ["冷奴",            0.6, 80,  180, 0,   "", "目安", "ひややっこ|冷ややっこ"],
+  ["豆腐",            0.1, 80,  180, 0,   "", "目安", "とうふ"],
+  ["厚揚げ",          0.3, 150, 130, 0,   "", "目安", "あつあげ"],
+  ["めかぶ",          0.5, 15,  100, 0,   "", "目安", "メカブ"],
+  ["もずく酢",        0.6, 20,  40,  0,   "", "目安", "もずく"],
+  ["わかめスープ",    1.2, 25,  90,  1.0, "杯", "目安", "わかめのスープ"],
+  ["味付け海苔",      0.3, 10,  80,  0,   "", "目安", "のり|海苔"],
+  ["ピクルス",        0.1, 20,  100, 0,   "", "目安", "自作ピクルス"],
+  ["トマトジュース",  0.0, 40,  500, 0,   "", "目安", "無塩トマトジュース|食塩無添加トマトジュース"],
+  ["ミニトマト",      0.0, 20,  200, 0,   "", "目安", "プチトマト|トマト"],
+  ["バナナ",          0.0, 90,  360, 0,   "本", "目安", ""],
+  ["りんご",          0.0, 110, 200, 0,   "個", "目安", "リンゴ"],
+  ["ヨーグルト",      0.1, 90,  200, 0,   "", "目安", ""],
+  ["牛乳",            0.2, 140, 300, 0,   "杯", "目安", "ぎゅうにゅう"],
+
+  // --- パン・軽食・汁物（目安）---
+  ["サンドイッチ",    1.5, 350, 200, 0,   "", "目安", "サンド"],
+  ["ハンバーガー",    2.2, 500, 250, 0,   "個", "目安", "バーガー"],
+  ["ホットドッグ",    2.0, 350, 180, 0,   "本", "目安", ""],
+  ["ピザ",            1.0, 200, 150, 0,   "切れ", "目安", ""],
+  ["クロワッサン",    0.6, 200, 60,  0,   "個", "目安", ""],
+  ["豚汁",            1.6, 130, 400, 1.3, "杯", "目安", "とん汁|ぶた汁"],
+  ["けんちん汁",      1.5, 110, 350, 1.2, "杯", "目安", ""],
+  ["吸い物",          1.2, 20,  50,  1.1, "杯", "目安", "すまし汁|お吸い物"],
+  ["スープ",          1.4, 80,  150, 1.2, "杯", "目安", "コンソメスープ|ポタージュ"]
+];
+
+/* 酒。純アルコール（g）だけを持つ。 */
+const DRINK_TABLE = [
+  ["ビール",        20, "杯", "生ビール|中ジョッキ|ジョッキ"],
+  ["缶ビール",      14, "本", "ビール350|350ml"],
+  ["ハイボール",    20, "杯", ""],
+  ["レモンサワー",  18, "杯", "サワー|チューハイ|酎ハイ"],
+  ["日本酒",        22, "合", "にほんしゅ|冷酒|熱燗"],
+  ["ワイン",        12, "杯", "赤ワイン|白ワイン|グラスワイン"],
+  ["焼酎",          20, "杯", "しょうちゅう|水割り"],
+  ["ウイスキー",    20, "杯", "ロック"]
+];
+
+/* --- 文字をそろえる。カタカナはひらがなに寄せ、記号と空白を落とす。 --- */
+const HALF_KANA = "｡｢｣､･ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝﾞﾟ";
+const FULL_KANA = "。「」、・ヲァィゥェォャュョッーアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワンﾞﾟ";
+function toFullKana(s) {
+  return s.replace(/[\uFF61-\uFF9F]/g, c => {
+    const i = HALF_KANA.indexOf(c);
+    return i >= 0 ? FULL_KANA[i] : c;
+  }).replace(/([カキクケコサシスセソタチツテトハヒフヘホ])ﾞ/g, (m, c) =>
+      String.fromCharCode(c.charCodeAt(0) + 1))
+    .replace(/([ハヒフヘホ])ﾟ/g, (m, c) => String.fromCharCode(c.charCodeAt(0) + 2));
+}
+
+function normText(s) {
+  return toFullKana(String(s || ""))
+    .replace(/[Ａ-Ｚａ-ｚ０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0))
+    .replace(/[ァ-ヶ]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60))
+    .replace(/[ー－―‐]/g, "ー")
+    .replace(/[\s　・、,，。.／\/（）()「」【】]/g, "")
+    .toLowerCase();
+}
+
+/* --- 辞書を引きやすい形に組み直す --- */
+const DISH_INDEX = [];
+DISH_TABLE.forEach(row => {
+  const [name, salt, kcal, k, soupSalt, unit, src, alias] = row;
+  const d = { key: normText(name), name, salt, kcal, k, soupSalt, unit, src, kind: "food" };
+  d.names = [normText(name)].concat(alias ? alias.split("|").map(normText) : []);
+  DISH_INDEX.push(d);
+});
+DRINK_TABLE.forEach(row => {
+  const [name, alcohol, unit, alias] = row;
+  const d = { key: normText(name), name, salt: 0, kcal: 0, k: 0, soupSalt: 0, unit, src: "目安", kind: "drink", alcohol };
+  d.names = [normText(name)].concat(alias ? alias.split("|").map(normText) : []);
+  DISH_INDEX.push(d);
+});
+// 長い名前から先に当てる。「味噌ラーメン」を「ラーメン」より先に見つけるため。
+const DISH_NAMES = [];
+DISH_INDEX.forEach(d => d.names.forEach(n => { if (n) DISH_NAMES.push({ n, d }); }));
+DISH_NAMES.sort((a, b) => b.n.length - a.n.length);
+
+/* --- 覚えた値があればそれを使う --- */
+function baseOf(dish) {
+  const learned = DB.learned && DB.learned[dish.key];
+  if (!learned) return { salt: dish.salt, kcal: dish.kcal, k: dish.k, learned: false };
+  return {
+    salt: num(learned.salt, dish.salt),
+    kcal: num(learned.kcal, dish.kcal),
+    k: num(learned.k, dish.k),
+    learned: true
+  };
+}
+
+const SIZE_WORDS = [
+  { re: /(半|ハーフ|はーふ|ミニ|みに)$/, mult: 0.5, label: "半" },
+  { re: /(大盛|おおもり|特盛|とくもり)$/, mult: 1.35, label: "大盛" },
+  { re: /(小盛|こもり|少なめ|すくなめ)$/, mult: 0.7, label: "小盛" }
+];
+
+/* 助詞や、修飾を表す言葉。未一致の知らせから外す。 */
+const FILLER = /(と|を|の|で|に|は|が|も|や|から|まで|づつ|ずつ|\d+|個|本|枚|杯|切れ|貫|串|人前|玉|合|皿|しぇあ|はんぶん|はんぶんこ|のこした|のこす|ぜんぶ|すこし|など|つき|いり|いっしょ|らんち|せっと|なみ|ふつう|あさ|ひる|よる)/g;
+function stripFiller(g) { return g.replace(FILLER, ""); }
+
+/* --- 引く対象。辞書に、あとから覚えた品目を足す。 --- */
+function candidateNames() {
+  const extra = [];
+  const learned = DB.learned || {};
+  Object.keys(learned).forEach(key => {
+    if (DISH_INDEX.some(d => d.names.indexOf(key) >= 0)) return;
+    const v = learned[key];
+    extra.push({
+      n: key,
+      d: {
+        key, name: v.name || key, salt: num(v.salt), kcal: num(v.kcal), k: num(v.k),
+        soupSalt: 0, unit: "", src: "あなたの値", kind: "food", names: [key]
+      }
+    });
+  });
+  if (!extra.length) return DISH_NAMES;
+  return DISH_NAMES.concat(extra).sort((a, b) => b.n.length - a.n.length);
+}
+
+/* --- 本文から料理を拾う。長いものから順に、前から詰めて当てる。 --- */
+function matchDishes(text) {
+  const s = normText(text);
+  const NAMES = candidateNames();
+  const items = [];
+  const gaps = [];
+  let i = 0, gapStart = 0;
+
+  while (i < s.length) {
+    let hit = null;
+    for (const cand of NAMES) {
+      if (cand.n.length <= s.length - i && s.startsWith(cand.n, i)) { hit = cand; break; }
+    }
+    if (!hit) { i++; continue; }
+
+    const before = s.slice(Math.max(0, i - 4), i);
+    const after = s.slice(i + hit.n.length, i + hit.n.length + 6);
+
+    // 個数：「餃子6個」「ビール2杯」。単位を持つ料理だけ数える。
+    let qty = 1, qtyLabel = "", qtyLen = 0;
+    const qm = after.match(/^(\d+)\s*(個|本|枚|杯|切れ|貫|串|人前|玉|合|皿)?/);
+    if (qm && qm[1] && hit.d.unit) {
+      qty = Math.max(1, Number(qm[1]));
+      qtyLabel = qm[1] + (qm[2] || hit.d.unit);
+      qtyLen = qm[0].length;
+    }
+
+    // 大きさ：「半チャーハン」「大盛ラーメン」
+    let mult = 1, sizeLabel = "", sizeLen = 0;
+    for (const sw of SIZE_WORDS) {
+      const m = before.match(sw.re);
+      if (m) { mult = sw.mult; sizeLabel = sw.label; sizeLen = m[1].length; break; }
+    }
+
+    // 大きさの語も読み取った分に含めるので、未一致から外す
+    const startAt = i - sizeLen;
+    if (startAt > gapStart) gaps.push(s.slice(gapStart, startAt));
+
+    items.push({ dish: hit.d, qty, qtyLabel, mult, sizeLabel });
+    i += hit.n.length + qtyLen;
+    gapStart = i;
+  }
+  if (s.length > gapStart) gaps.push(s.slice(gapStart));
+  return { items, gaps: gaps.map(stripFiller).filter(g => g.length >= 2) };
+}
+
+/* --- 拾った料理を、修飾の指定と合わせて数値にする --- */
+function estimateLocal(text, mods) {
+  const found = matchDishes(text);
+  const m = mods || {};
+  const shared = !!m.shared;
+  const soupLeft = !!m.soup_left;
+  const noSauce = !!m.no_sauce || !!m.sauce_side;
+  const noPickles = !!m.no_pickles;
+
+  const rows = [];
+  let alcohol = 0;
+
+  found.items.forEach(it => {
+    const d = it.dish;
+    if (d.kind === "drink") {
+      alcohol += num(d.alcohol) * it.qty;
+      rows.push({
+        key: d.key, name: d.name + (it.qtyLabel ? " " + it.qtyLabel : ""),
+        salt: 0, kcal: 0, k: 0, mult: it.qty, slCut: 0,
+        src: d.src, learned: false, note: "純アルコール " + r1(num(d.alcohol) * it.qty) + "g"
+      });
+      return;
+    }
+
+    const base = baseOf(d);
+    let mult = it.mult * it.qty;
+    if (shared) mult *= 0.5;
+
+    let salt = base.salt * mult;
+    let kcal = base.kcal * mult;
+    let k = base.k * mult;
+
+    const notes = [];
+    if (it.sizeLabel) notes.push(it.sizeLabel);
+    if (it.qtyLabel) notes.push(it.qtyLabel);
+    if (shared) notes.push("シェア");
+
+    // 汁を残した分を引く
+    let slCut = 0;
+    if (soupLeft && d.soupSalt > 0) {
+      slCut = d.soupSalt * mult;
+      salt -= slCut;
+      notes.push("汁を残した −" + r1(slCut) + "g");
+    }
+    // 漬物を残した／タレをかけていない
+    if (noPickles && (d.key === normText("漬物") || d.key === normText("キムチ"))) {
+      slCut += salt - 0.1 * mult;
+      salt = 0.1 * mult;
+      notes.push("残した");
+    }
+    if (noSauce && (d.key === normText("納豆") || d.key === normText("冷奴") || d.key === normText("餃子") || d.key === normText("サラダ"))) {
+      const cut = Math.min(salt, 0.3 * mult);
+      slCut += cut; salt -= cut;
+      notes.push("タレなし −" + r1(cut) + "g");
+    }
+
+    rows.push({
+      key: d.key, name: d.name, salt: Math.max(0, r1(salt)),
+      kcal: Math.round(kcal), k: Math.round(k),
+      mult, slCut, src: d.src, learned: base.learned,
+      note: notes.join(" ・ ")
+    });
+  });
+
+  const total = rows.reduce((t, r) => {
+    t.salt += r.salt; t.kcal += r.kcal; t.k += r.k; return t;
+  }, { salt: 0, kcal: 0, k: 0 });
+
+  return {
+    rows,
+    unknown: found.gaps,
+    total: { salt: r1(total.salt), kcal: Math.round(total.kcal), k: Math.round(total.k), alcohol: r1(alcohol) }
+  };
+}
+
+/* --- 直された値を、その料理の値として覚える --- */
+function learnFromItem(item, newSalt) {
+  if (!item || !item.key) return false;
+  const mult = num(item.mult, 1) || 1;
+  const base = r1((num(newSalt) + num(item.slCut)) / mult);
+  if (!(base >= 0)) return false;
+  const prev = (DB.learned && DB.learned[item.key]) || {};
+  DB.learned = DB.learned || {};
+  DB.learned[item.key] = { salt: base, kcal: prev.kcal, k: prev.k, name: item.name || prev.name };
+  return true;
+}
+
+/* 辞書にない品目でも、名前を決めて覚えられるようにする */
+function learnByName(name, salt, kcal, k) {
+  const key = normText(name);
+  if (!key) return false;
+  DB.learned = DB.learned || {};
+  DB.learned[key] = { salt: r1(num(salt)), kcal: Math.round(num(kcal)) || undefined, k: Math.round(num(k)) || undefined, name: name };
+  return true;
 }
 
 /* =========================================================
@@ -1414,7 +1879,7 @@ function csvMeals() {
   Object.keys(DB.days).sort().forEach(d => {
     dayOf(d).meals.forEach(m => {
       const mods = (m.modifiers || []).map(id => (MODIFIERS.find(x => x.id === id) || {}).label).filter(Boolean).join("・");
-      const src = m.source === "measured" ? "実測" : (m.edited ? "手で修正" : (m.source === "ai" ? "AI推定" : "手入力"));
+      const src = m.source === "measured" ? "実測" : (m.edited ? "手で修正" : (m.source === "ai" ? "AI推定" : (m.source === "dict" ? "辞書" : "手入力")));
       rows.push([d, m.slot || "", m.label, r1(num(m.salt)), Math.round(num(m.kcal)), Math.round(num(m.potassium)), src, mods, m.note || ""]);
     });
   });
@@ -1466,7 +1931,7 @@ function start() {
   $("#theDate").addEventListener("change", ev => {
     state.date = ev.target.value || todayStr();
     state.editingMeal = null; state.estimate = null;
-    state.mealText = ""; state.mods = {};
+    state.mealText = ""; state.mods = {}; state.local = null;
     state.photoFull = null; state.photoThumb = null;
     renderAll();
   });
