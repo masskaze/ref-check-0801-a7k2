@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>戦国風雲録</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ タイトル ============ -->
+  <section id="title" class="screen show">
+    <div class="title-inner">
+      <div class="title-crest">✿</div>
+      <h1>戦国風雲録</h1>
+      <p class="title-sub">SENGOKU  FUUNROKU</p>
+      <p class="title-lead">天文乱世、五十九か国。<br>茶の湯と鉄砲、調略と合戦。<br>そなたは、いずれの家に生まれるか。</p>
+      <div class="title-menu">
+        <button class="btn big" data-act="new">新しく始める</button>
+        <button class="btn big" data-act="load">続きから</button>
+        <button class="btn big" data-act="help">遊び方</button>
+      </div>
+      <p class="title-foot">矢印キー/ドラッグで地図を動かせます</p>
+    </div>
+  </section>
+
+  <!-- ============ シナリオ・大名選択 ============ -->
+  <section id="setup" class="screen">
+    <div class="setup-inner">
+      <h2 class="sec-title">一、シナリオを選ぶ</h2>
+      <div id="scenarioList" class="scenario-list"></div>
+      <h2 class="sec-title">二、大名を選ぶ</h2>
+      <div class="clanpick">
+        <div id="clanList" class="clan-list"></div>
+        <div id="clanDetail" class="clan-detail"><p class="dim">大名家を選んでください。</p></div>
+      </div>
+      <div class="setup-foot">
+        <button class="btn" data-act="back-title">戻る</button>
+        <button class="btn primary" id="startBtn" disabled>この家で始める</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 本編 ============ -->
+  <main id="game" class="screen">
+    <header id="topbar">
+      <div class="tb-date"><span id="tbYear"></span><span id="tbSeason" class="season"></span></div>
+      <div class="tb-clan"><span id="tbCrest" class="crest"></span><span id="tbClan"></span><span id="tbLord" class="dim"></span></div>
+      <div class="tb-stats" id="tbStats"></div>
+      <div class="tb-btns">
+        <button class="btn sm" data-act="ranking">情勢</button>
+        <button class="btn sm" data-act="retainers">家臣</button>
+        <button class="btn sm" data-act="save">記録</button>
+        <button class="btn sm" data-act="help">?</button>
+        <button class="btn sm primary" id="endTurnBtn">季節を終える</button>
+      </div>
+    </header>
+
+    <div id="stage">
+      <div id="mapwrap">
+        <div id="mapscale">
+          <svg id="links"></svg>
+          <div id="map"></div>
+        </div>
+        <div id="mapctl">
+          <button class="btn xs" data-act="zoomin">＋</button>
+          <button class="btn xs" data-act="zoomout">－</button>
+          <button class="btn xs" data-act="zoomfit">全</button>
+        </div>
+        <div id="maplegend"></div>
+        <button id="sideToggle" class="btn sm">◀ 国情報</button>
+      </div>
+      <aside id="side">
+        <div id="provPanel"><p class="dim pad">国をえらんでください。</p></div>
+      </aside>
+    </div>
+
+    <footer id="logbar"><div id="logList"></div></footer>
+  </main>
+
+  <!-- ============ 合戦 ============ -->
+  <div id="battle" class="overlay">
+    <div class="battle-box">
+      <div class="battle-head">
+        <span id="btlTitle"></span>
+        <span id="btlTurn" class="dim"></span>
+        <span id="btlWind" class="dim"></span>
+        <span class="grow"></span>
+        <button class="btn sm" id="btlAuto">委任</button>
+        <button class="btn sm" id="btlRetreat">退却</button>
+        <button class="btn sm primary" id="btlEnd">フェイズ終了</button>
+      </div>
+      <div class="battle-main">
+        <div id="btlFieldWrap"><div id="btlField"></div></div>
+        <div id="btlSide">
+          <div id="btlUnitInfo"></div>
+          <div id="btlCmds"></div>
+          <div id="btlRoster"></div>
+        </div>
+      </div>
+      <div id="btlLog"></div>
+    </div>
+  </div>
+
+  <!-- ============ 汎用ダイアログ ============ -->
+  <div id="modal" class="overlay">
+    <div class="modal-box">
+      <div class="modal-head"><span id="modalTitle"></span><button class="x" id="modalX">✕</button></div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-foot" id="modalFoot"></div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/commands.js"></script>
+<script src="js/battle.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/battleui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
