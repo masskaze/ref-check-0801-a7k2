@@ -5,8 +5,8 @@ const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 const errors = [];
 page.on('pageerror', e => errors.push('PAGEERROR: ' + e.message + '\n' + (e.stack||'').split('\n').slice(0,4).join('\n')));
-page.on('console', m => { if (m.type() === 'error') errors.push('CONSOLE: ' + m.text()); });
-await page.goto('file://' + process.cwd() + '/nobunaga/index.html');
+page.on('console', m => { if (m.type() === 'error' && !/fonts\.(googleapis|gstatic)|ERR_TUNNEL/.test(m.text())) errors.push('CONSOLE: ' + m.text()); });
+await page.goto(process.env.GAME_URL || ('file://' + process.cwd() + '/nobunaga/index.html'));
 await page.click('#title [data-act="new"]');
 for (const c of await page.$$('.clan-chip')) { if ((await c.textContent()).includes(CLAN)) { await c.click(); break; } }
 await page.click('#startBtn');

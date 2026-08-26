@@ -1,11 +1,11 @@
 import { chromium } from '/opt/node22/lib/node_modules/playwright/index.mjs';
 
-const url = 'file://' + process.cwd() + '/nobunaga/index.html';
+const url = process.env.GAME_URL || ('file://' + process.cwd() + '/nobunaga/index.html');
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 const errors = [];
 page.on('pageerror', e => errors.push('PAGEERROR: ' + e.message));
-page.on('console', m => { if (m.type() === 'error') errors.push('CONSOLE: ' + m.text()); });
+page.on('console', m => { if (m.type() === 'error' && !/fonts\.(googleapis|gstatic)|ERR_TUNNEL/.test(m.text())) errors.push('CONSOLE: ' + m.text()); });
 await page.goto(url);
 await page.waitForTimeout(300);
 

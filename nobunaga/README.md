@@ -1,12 +1,42 @@
 # 戦国風雲録
 
 スーパーファミコン版『信長の野望・武将風雲録』をモデルにした、ブラウザで遊べる戦国シミュレーションゲームです。
-外部ライブラリなし・ビルド不要。`nobunaga/index.html` をブラウザで開けばすぐ遊べます。
+外部ライブラリなし・ビルド不要。ブラウザで開けばすぐ遊べます。
 
-```
+## 遊びはじめる
+
+**A. リポジトリを取ってきて開く**
+
+```bash
+git clone https://github.com/masskaze/ref-check-0801-a7k2.git
+cd ref-check-0801-a7k2
 open nobunaga/index.html          # macOS
 xdg-open nobunaga/index.html      # Linux
+start nobunaga\index.html         # Windows
 ```
+
+**B. 1ファイルだけ落として開く**
+
+`nobunaga/dist/sengoku-fuunroku.html`（約240KB）が全部入りの単一ファイルです。
+GitHub の Raw から保存してダブルクリックするだけで動きます。
+
+```bash
+node nobunaga/build.mjs           # js/css を編集したら作り直す
+```
+
+いずれも `file://` のまま動きます。サーバーは要りません。
+記録はブラウザの `localStorage` に自動保存されます（別のブラウザ・別の端末とは共有されません）。
+
+## はじめの一手
+
+1. 〈新しく始める〉→ シナリオと大名家を選ぶ。迷ったら **1560年・織田家**（尾張1国・家臣19人、難易度★★★☆☆）
+2. 地図で自国をクリック → 右の盤から命令を選ぶ。国ごとに毎季 1〜3 回まで
+3. 序盤の型は **商業 → 徴兵 → 訓練**。金がなければ何もできないので、まず商業と開墾で足腰を作る
+4. 民忠が 40 を切ると一揆が起きます。下がったら〈施し〉
+5. 家臣の忠誠が 60 を切りはじめたら〈褒美〉か〈茶会〉。放っておくと出奔し、敵に調略されます
+6. 〈探索〉は当たりの多い命令です。在野武将・茶器・隠し田が見つかります
+7. 攻めるのは **敵国の兵の1.5〜2倍**を用意してから。城攻めは守り手が有利です
+8. 出陣したら〈委任〉で自動処理もできますが、鉄砲隊を敵騎馬に当てるだけで戦況は変わります
 
 ---
 
@@ -59,6 +89,8 @@ xdg-open nobunaga/index.html      # Linux
 ```
 nobunaga/
 ├── index.html          画面の骨組み
+├── build.mjs           単一HTMLへの結合スクリプト
+├── dist/               生成物（sengoku-fuunroku.html … 全部入りの1ファイル）
 ├── css/style.css       スタイル
 ├── js/
 │   ├── data.js         国59・武将266・宝物30・シナリオ2
@@ -84,6 +116,11 @@ node nobunaga/test/play.mjs 武田 10     # 10季ぶん自動プレイして例�
 ```
 
 Playwright を使うテストはリポジトリのルートから実行してください。
+`GAME_URL` を渡すと単一ファイル版も同じテストにかけられます。
+
+```bash
+GAME_URL="file://$PWD/nobunaga/dist/sengoku-fuunroku.html" node nobunaga/test/smoke.mjs
+```
 
 ## 断り書き
 

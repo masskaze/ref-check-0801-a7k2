@@ -7,12 +7,12 @@
   --ink:#eee6d5; --dim:#96a1b8; --gold:#e3bd6a; --gold2:#f6dfa4;
   --red:#c8544a; --blue:#5b8fd4; --green:#5aa06a; --purple:#9b7ac0;
   --shadow:0 10px 34px -18px #000;
-  --mincho:"Hiragino Mincho ProN","Yu Mincho",YuMincho,"MS PMincho",serif;
-  --gothic:"Hiragino Kaku Gothic ProN","Yu Gothic Medium","Yu Gothic",Meiryo,sans-serif;
+  --mincho:"Shippori Mincho B1","Hiragino Mincho ProN","Yu Mincho",YuMincho,"MS PMincho",serif;
+  --gothic:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic Medium","Yu Gothic",Meiryo,sans-serif;
 }
 *{box-sizing:border-box}
-html,body{height:100%}
-#app{height:100%}
+html,body{height:100%;min-height:100vh}
+#app{height:100vh;height:100dvh}
 body{
   margin:0;background:var(--bg);color:var(--ink);
   font-family:var(--gothic);font-size:13px;line-height:1.6;
