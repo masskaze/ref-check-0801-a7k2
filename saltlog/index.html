@@ -607,7 +607,7 @@ function renderMealList(meals) {
         ${m.photo ? `<img class="thumb" src="${m.photo}" alt="">` : ""}
         <div style="flex:1;min-width:0">
           <div class="top">
-            <span class="slot">${esc(m.slot || "")}</span>
+            ${m.slot ? `<span class="slot">${esc(m.slot)}</span>` : ""}
             <span class="name">${esc(m.label)}</span>
             <span class="salt mincho" style="font-size:17px">${r1(num(m.salt)).toFixed(1)}<span style="font-size:12px;color:var(--sub)"> g</span></span>
           </div>
@@ -1916,9 +1916,25 @@ function renderSettings() {
     try {
       const parsed = JSON.parse(await f.text());
       if (!parsed || typeof parsed.days !== "object") throw new Error("形式が違います");
+
+      const dayCount = Object.keys(parsed.days).length;
       Object.assign(DB.days, parsed.days);
+
+      let learnedCount = 0;
+      if (parsed.learned && typeof parsed.learned === "object") {
+        learnedCount = Object.keys(parsed.learned).length;
+        DB.learned = Object.assign(DB.learned || {}, parsed.learned);
+      }
+
+      // 目標だけ引き継ぐ。API キーはファイルからは受け取らない。
+      const ps = parsed.settings || {};
+      ["saltGoal", "bpGoalSys", "bpGoalDia"].forEach(k => {
+        if (typeof ps[k] === "number") DB.settings[k] = ps[k];
+      });
+
       save(); renderAll();
-      flash("読み込みました。", "ok", $("#flash-settings"));
+      flash("読み込みました。" + dayCount + " 日分"
+        + (learnedCount ? "、覚えた品目 " + learnedCount + " 件" : "") + "。", "ok", $("#flash-settings"));
     } catch (e) {
       flash("読み込めませんでした：" + e.message, "err", $("#flash-settings"));
     }
